@@ -9,11 +9,21 @@ pub enum ExceptionType {
     _SE,
 }
 
+#[repr(u8)]
+#[derive(Copy, Clone)]
+pub enum ExceptionSource {
+    _EL1t,
+    _EL1h,
+    _EL064,
+    _EL032,
+}
+
 
 #[repr(C)]
 pub struct ExceptionContext {
     pub etype: ExceptionType, // u8
-    pub _padding: [u8; 7], // because this struct follows c style repr
+    pub esource: ExceptionSource, // u8
+    pub _padding: [u8; 6], // because this struct follows c style repr
     pub x: [u64; 31],   // x0–x30
     pub elr: u64,
     pub spsr: u64,
@@ -34,8 +44,15 @@ pub extern "C" fn handle_exception_el1(ctx: &mut ExceptionContext) {
         ExceptionType::_FIQ  => "FIQ",
         ExceptionType::_SE   => "SError",
     };
+    let esource_str = match ctx.esource {
+        ExceptionSource::_EL1t => "EL1t",
+        ExceptionSource::_EL1h => "EL1h",
+        ExceptionSource::_EL064 => "EL064",
+        ExceptionSource::_EL032 => "EL032",
+    };
     println!("=== Exception Context ===").unwrap();
     println!("Type : {} ({})", etype_str, ctx.etype as u8).unwrap();
+    println!("Source : {} ({})", esource_str, ctx.esource as u8).unwrap();
     println!("ELR  : {:#018x}", ctx.elr).unwrap();
     println!("SPSR : {:#018x}", ctx.spsr).unwrap();
     println!("ESR  : {:#018x}", ctx.esr).unwrap();

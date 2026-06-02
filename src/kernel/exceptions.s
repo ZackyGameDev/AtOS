@@ -1,9 +1,15 @@
 .section ".text.vectors"
 .global el1_vectors
+
 .equ E_SYNC,   0 // to tell rust handler what the exception is
 .equ E_IRQ,    1
 .equ E_FIQ,    2
 .equ E_SERROR, 3
+
+.equ FROM_EL1t, 0
+.equ FROM_EL1h, 1
+.equ FROM_EL064, 2
+.equ FROM_EL032, 3
 
 // VECTOR TABLE FOR EXCEPTIONS AT EL1
 
@@ -11,23 +17,42 @@
 
 el1_vectors:
 
-b   el1_sync
+b   el11t_sync
 .space 124
-b   el1_irq
+b   el11t_irq
 .space 124
-b   el1_fiq
+b   el11t_fiq
 .space 124
-b   el1_serror
+b   el11t_serror
 .space 124
 
-b   el1_sync
+b   el11h_sync
 .space 124
-b   el1_irq
+b   el11h_irq
 .space 124
-b   el1_fiq
+b   el11h_fiq
 .space 124
-b   el1_serror
+b   el11h_serror
 .space 124
+
+b   el1064_sync
+.space 124
+b   el1064_irq
+.space 124
+b   el1064_fiq
+.space 124
+b   el1064_serror
+.space 124
+
+b   el1032_sync
+.space 124
+b   el1032_irq
+.space 124
+b   el1032_fiq
+.space 124
+b   el1032_serror
+.space 124
+
 
 // HANDLERS FOR EL1 EXCEPTIONS
 
@@ -90,20 +115,23 @@ b   el1_serror
 .endm
 
 // handling them
-.macro SET_EXCEPTION_ARG type
+.macro SET_EXCEPTION_ARG type source
     mov     w9, #\type
     strb    w9, [sp]
+    mov     w9, #\source
+    strb    w9, [sp, #1]
     mov     x0, sp
 .endm
 
-.macro HANDLE_EXCEPTION type
-    sub     sp, sp, #0x120 // allocating space for etype + gprs + 4 u64 reg
+.macro HANDLE_EXCEPTION type source
+    sub     sp, sp, #0x120 // allocating space for etype + esource + gprs + 4 u64 reg
+    // make sure sp is aigned to 16 bytes for rust handler according to arm standard
 
     // save registers
     SAVE_REG
 
     // call rust handler with correct arg
-    SET_EXCEPTION_ARG \type
+    SET_EXCEPTION_ARG \type \source
     bl      handle_exception_el1
 
     // load back the registers
@@ -114,14 +142,53 @@ b   el1_serror
     eret // handling completed :)
 .endm
 
-el1_sync:
-    HANDLE_EXCEPTION E_SYNC
+el11t_sync:
+    HANDLE_EXCEPTION E_SYNC FROM_EL1t
     
-el1_irq:
-    HANDLE_EXCEPTION E_IRQ
+el11t_irq:
+    HANDLE_EXCEPTION E_IRQ FROM_EL1t
 
-el1_fiq:
-    HANDLE_EXCEPTION E_FIQ
+el11t_fiq:
+    HANDLE_EXCEPTION E_FIQ FROM_EL1t
 
-el1_serror:
-    HANDLE_EXCEPTION E_SERROR
+el11t_serror:
+    HANDLE_EXCEPTION E_SERROR FROM_EL1t
+
+
+el11h_sync:
+    HANDLE_EXCEPTION E_SYNC FROM_EL1h
+
+el11h_irq:
+    HANDLE_EXCEPTION E_IRQ FROM_EL1h
+
+el11h_fiq:
+    HANDLE_EXCEPTION E_FIQ FROM_EL1h
+
+el11h_serror:
+    HANDLE_EXCEPTION E_SERROR FROM_EL1h
+
+
+el1064_sync:
+    HANDLE_EXCEPTION E_SYNC FROM_EL064
+
+el1064_irq:
+    HANDLE_EXCEPTION E_IRQ FROM_EL064
+
+el1064_fiq:
+    HANDLE_EXCEPTION E_FIQ FROM_EL064
+
+el1064_serror:
+    HANDLE_EXCEPTION E_SERROR FROM_EL064
+
+
+el1032_sync:
+    HANDLE_EXCEPTION E_SYNC FROM_EL032
+
+el1032_irq:
+    HANDLE_EXCEPTION E_IRQ FROM_EL032
+
+el1032_fiq:
+    HANDLE_EXCEPTION E_FIQ FROM_EL032
+
+el1032_serror:
+    HANDLE_EXCEPTION E_SERROR FROM_EL032

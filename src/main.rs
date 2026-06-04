@@ -4,6 +4,7 @@
 mod kernel;
 
 use kernel::utils::get_current_el;
+use kernel::peripherals::Uart;
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack. 
 unsafe extern "C" {
@@ -62,7 +63,9 @@ fn enter_user(entry_point: usize, stack_top: usize) {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _rust_main() -> ! {
-    println!("\r\nWelcome to, AtOS.").unwrap();
+    Uart.init();
+    
+    println!("Welcome to, AtOS.").unwrap();
     println!("Current EL is: EL{}", get_current_el()).unwrap();
     
     let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
@@ -71,14 +74,28 @@ pub extern "C" fn _rust_main() -> ! {
     println!("Kernel size: {} KB", kernel_end_addr / 1024).unwrap();
     println!("Stack top at: {:#x}", stack_top_addr).unwrap();
 
-    load_and_run_init_process();
+//    load_and_run_init_process();
 
     loop {
-        println!("The end. Make sure to power off your RPi before disconnecting it :)").unwrap();
-        loop {
-            delay(1_000_000);
-        }
+	let byte = Uart.read_byte();
+
+	if byte == 127 || byte == 8 {
+	    Uart.write_byte(8); // Move cursor left by one space
+	    Uart.write_byte(32); // Print a space (overwriting the old character, effectively hiding it)
+	    Uart.write_byte(8); // Move the cursor left again so that it stays at the position it is meant to stay in
+	} else if byte == b'\r' || byte == b'\n' {
+	    let _ = println!();
+	} else  {
+	    let _ = print!("{}", byte as char);
+	}
     }
+    
+    // loop {
+    //     println!("The end. Make sure to power off your RPi before disconnecting it :)").unwrap();
+    //     loop {
+    //         delay(1_000_000);
+    //     }
+    // }
 }
 
 use core::panic::PanicInfo;

@@ -10,9 +10,12 @@ fn main() {
     println!("x = {}", x).unwrap();
     x += 1;
     println!("x = {}", x).unwrap();
+
+    for i in 0..100 {
+        println!("init program is working, iteration {}", i).unwrap();
+    }
     
-    println!("init program is done working, it will now loop forever.").unwrap();
-    loop {println!("This is init looping forever!").unwrap(); core::hint::spin_loop();}
+    println!("init program is done working, it will now exit.").unwrap();
 }
 
 

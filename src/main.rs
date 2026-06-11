@@ -9,8 +9,8 @@ use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
 use kernel::processes::{load_process};
 
-pub const DEBUG_PRINTS_ENABLED: bool = true;  
-// pub const DEBUG_PRINTS_ENABLED: bool = false;  
+// pub const DEBUG_PRINTS_ENABLED: bool = true;  
+pub const DEBUG_PRINTS_ENABLED: bool = false;  
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack. 
 unsafe extern "C" {
@@ -42,12 +42,11 @@ pub extern "C" fn _rust_main() -> ! {
     let process_a_image: &'static [u8] = include_bytes!("user/init.bin");
     let process_b_image: &'static [u8] = include_bytes!("user/b.bin");
 
-    load_process("init", 0, process_a_image, 0x200000, 0x200274);
-    load_process("process b", 0, process_b_image, 0x500000, 0x500334);
+    load_process("init", 0, process_a_image, 0x200000, 0x2002e0);
+    load_process("process b", 0, process_b_image, 0x500000, 0x500500);
 
     println!("Starting the scheduler!").unwrap();
-    PhysicalTimer::set_seconds(1);
-    PhysicalTimer::enable();
+    Scheduler::start();
 
     loop { core::hint::spin_loop(); }
 }
@@ -61,10 +60,14 @@ pub extern "C" fn _rust_main() -> ! {
 pub fn the_end() -> ! {
     println!("All processes have completed/terminated.").unwrap();
     println!("There is nothing left to do. You may power off your device now.").unwrap();
+    PhysicalTimer::set_seconds(1);
+    PhysicalTimer::disable();
     loop { core::hint::spin_loop(); }
 }
 
 use core::panic::PanicInfo;
+
+use crate::kernel::scheduler::Scheduler;
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
     println!("Kernel Panicked!: {}", panic).unwrap();

@@ -2,7 +2,7 @@
 
 use crate::dprintln;
 use crate::kernel::interrupts::{Interrupts, TimerInterruptSource, InterruptRoute};
-use crate::kernel::exceptions::ExceptionContext;
+use crate::kernel::exceptions::{ExceptionContext, was_from_user_el0};
 use crate::kernel::scheduler::Scheduler;
 
 pub struct PhysicalTimer;
@@ -22,8 +22,14 @@ impl PhysicalTimer {
         PhysicalTimer::set_seconds(1); // disable irq by immedaitely scheduling it into the future
         PhysicalTimer::disable();
 
-        Scheduler::timeslice_up();
-        Scheduler::schedule_next(ctx);
+        if was_from_user_el0(ctx) {
+            Scheduler::timeslice_up();
+            Scheduler::schedule_next(ctx);
+        } else {
+            dprintln!("[P_TIMER] Timer went off in kernel mode. Not switching context.");
+            Scheduler::reset_timer();
+        }
+
     }
 
 

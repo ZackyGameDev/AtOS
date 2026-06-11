@@ -3,10 +3,10 @@ use core::panic;
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::processes::{PROCESS_TABLE, ProcessContext, MAX_PROCESSES, ProcessState};
 use crate::kernel::timer::PhysicalTimer;
-use crate::println;
+use crate::dprintln;
 use crate::the_end;
 
-pub static mut CURRENT_PROCESS: usize = 0; // last scheduled process index in process table
+pub static mut CURRENT_PROCESS: usize = 1; // last scheduled process index in process table
 pub const TIMESLICE_MILISECONDS: u64 = 1; 
 
 // we implement xv6 similar round robin
@@ -14,15 +14,24 @@ pub const TIMESLICE_MILISECONDS: u64 = 1;
 pub struct Scheduler;
 
 impl Scheduler {
+
+    pub fn start() {
+        dprintln!("[SCHEDULER] Starting scheduler...");
+        unsafe {
+            core::arch::asm!("svc #0", options(noreturn));
+        }
+    }
+
     pub fn get_current_process_index() -> usize {
         unsafe { CURRENT_PROCESS }
     }
 
     pub fn schedule_next(ectx: &mut ExceptionContext) {
+        dprintln!("[SCHEDULER] Scheduling next process...");
         if let Some(next_process) = Self::choose_next_process() {
             Self::load_pctx(next_process, ectx);
         } else {
-            println!("[SCHEDULER] No process to schedule!").unwrap();
+            dprintln!("[SCHEDULER] No process left to schedule!");
             the_end();
         }
     }
@@ -78,7 +87,7 @@ impl Scheduler {
         }
     }
 
-    fn reset_timer() {
+    pub fn reset_timer() {
         PhysicalTimer::set_milliseconds(TIMESLICE_MILISECONDS);
         PhysicalTimer::enable();
     }

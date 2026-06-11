@@ -1,6 +1,6 @@
 use crate::kernel::processes::ProcessContext;
 use crate::kernel::scheduler::Scheduler;
-use crate::println;
+use crate::{dprintln, println};
 use crate::kernel::syscalls;
 use crate::kernel::interrupts::{Interrupts, InterruptSource};
 use crate::kernel::timer::PhysicalTimer;
@@ -79,7 +79,7 @@ macro_rules! unhandled_exception {
     }};
 }
 
-fn was_from_user_el0(ctx: &ExceptionContext) -> bool {
+pub fn was_from_user_el0(ctx: &ExceptionContext) -> bool {
     ctx.esource == ExceptionSource::_EL064 || ctx.esource == ExceptionSource::_EL032
 }
 
@@ -87,6 +87,16 @@ fn handle_sync_exception(ctx: &mut ExceptionContext) -> () {
     let exception_class = (ctx.esr >> 26) & 0x3f;
 
     match ctx.esource {
+        ExceptionSource::_EL1h => {
+            if exception_class == 0x15 && (ctx.esr & 0xffff) == 0 {
+                dprintln!("[EXCEPTIONS] svc #0 from EL1 detected. starting scheduler...");
+                Scheduler::reset_timer();
+                Scheduler::schedule_next(ctx);
+            } else {
+                unhandled_exception!(ctx);
+            }
+        },
+
         ExceptionSource::_EL064=> {
             match exception_class {
                 0x15 => { // it was an svc instruction

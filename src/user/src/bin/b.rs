@@ -13,8 +13,12 @@ fn main() {
     x += 1;
     println!("x = {}", x).unwrap();
     
-    println!("process B is done working, it will now loop forever.").unwrap();
-    loop {println!("This is b looping forever!").unwrap(); core::hint::spin_loop();}
+    for i in 0..100 {
+        println!("process B is working, iteration {}", i).unwrap();
+    }
+
+    println!("process B is done working, it will now exit.").unwrap();
+    // loop {println!("This is b looping forever!").unwrap(); core::hint::spin_loop();}
 }
 
 entry!(main);

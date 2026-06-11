@@ -1,4 +1,4 @@
-use crate::print;
+use crate::{print, dprintln};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::processes::ProcessState;
 use crate::kernel::scheduler::Scheduler;
@@ -31,11 +31,12 @@ fn sys_print(ctx: &ExceptionContext) -> core::fmt::Result {
 // expects x0 to have the exit code
 fn sys_exit(ctx: &mut ExceptionContext) -> core::fmt::Result {
     let exit_code = ctx.x[0] as i32;
-    print!("[SYS_EXIT] Process exiting with code: {}\n", exit_code).unwrap();
+    dprintln!("[SYS_EXIT] Process exiting with code: {}", exit_code);
 
     unsafe {
         if let Some(current_process) = &mut crate::kernel::processes::PROCESS_TABLE[Scheduler::get_current_process_index()] {
             current_process.set_state(ProcessState::Terminated);
+            dprintln!("[SYS_EXIT] Process pid {}, name \"{:?}\" terminated.", current_process.pid, current_process.name);
         }
     }
 

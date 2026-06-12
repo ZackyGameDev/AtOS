@@ -31,8 +31,8 @@ fn sys_print(ctx: &ExceptionContext) -> core::fmt::Result {
 
 // SYSCALL #2 -- READ */
 pub fn sys_read(ctx: &mut ExceptionContext) -> core::fmt::Result {
-    let usr_bufp = ctx.x[1] as *mut u8;
-    let buf_sz = ctx.x[2] as usize;
+    let usr_bufp = ctx.x[0] as *mut u8;
+    let buf_sz = ctx.x[1] as usize;
 
     // Invalid arguments, return 0 bytes read.
     if usr_bufp.is_null() || buf_sz == 0 {

@@ -3,6 +3,46 @@
 use crate::kernel::exceptions::ExceptionContext;
 
 pub const MAX_PROCESSES: usize = 50;
+
+//
+// CPU Abstraction
+//
+
+pub struct Cpu {
+    pub current_pid: Option<u64>, // Tracking the running proc by id
+    
+    pub ncli: usize, // Depth of nested spinlocks held on this CPU
+    pub interrupts_enabled: bool, // Were interrupts enabled BEFORE the very first lock?
+}
+
+impl Cpu {
+    fn get_instance() -> &'static mut Self {
+	static mut MYCPU: Cpu = Cpu {
+	    ncli: 0,
+	    interrupts_enabled: false,
+	    current_pid: None,
+	};
+	unsafe { &mut MYCPU }
+    }
+
+    pub fn current() -> &'static mut Self {
+	Self::get_instance()
+    }
+
+    pub fn set_current_process(&mut self, pid: u64) {
+	self.current_pid = Some(pid);
+    }
+
+    pub fn clear_current_process(&mut self) {
+	self.current_pid = None;
+    }
+}
+
+// @Todo(cleanup): You can remove this, but you'd have to fix the references.
+pub fn mycpu() -> &'static mut Cpu {
+    Cpu::current()
+}
+
 pub static mut PROCESS_TABLE: [Option<Process>; MAX_PROCESSES] = [None; MAX_PROCESSES]; 
 pub static mut NEXT_PID: u64 = 1; // 0 could be for kernel
 
@@ -47,6 +87,7 @@ pub struct Process {
     pub state: ProcessState,
     pub parent_pid: u64, // initially this was &Parent but then i'd have to deal with rust lifetime complications
     pub pctx: ProcessContext,
+    pub chan: u64,
 }
 
 impl Process {
@@ -63,7 +104,12 @@ impl Process {
         let len = core::cmp::min(bytes.len(), 32);
         name_bytes[..len].copy_from_slice(&bytes[..len]);
 
-        Self { pid, name: name_bytes, state: ProcessState::Ready, parent_pid, pctx: ProcessContext::new(entry_point, sp) }
+        Self { pid,
+	       name: name_bytes,
+	       state: ProcessState::Ready,
+	       parent_pid,
+	       pctx: ProcessContext::new(entry_point, sp),
+	       chan: 0, }
     }
 
     pub fn set_state(&mut self, new_state: ProcessState) {
@@ -72,6 +118,35 @@ impl Process {
 
     pub fn set_pctx(&mut self, new_ctx: ProcessContext) {
         self.pctx = new_ctx;
+    }
+
+    pub fn get_current() -> Option<&'static mut Process> {
+	let cpu = Cpu::current();
+	let current_id = cpu.current_pid?;
+
+	unsafe {
+	    for slot in PROCESS_TABLE.iter_mut() {
+		if let Some(proc) = slot {
+		    if proc.pid == current_id {
+			return Some(proc);
+		    }
+		}
+	    }
+	}
+	None
+    }
+
+    pub fn find_by_id(pid: u64) -> Option<&'static mut Process> {
+	unsafe {
+	    for slot in PROCESS_TABLE.iter_mut() {
+		if let Some(proc) = slot {
+		    if proc.pid == pid {
+			return Some(proc);
+		    }
+		}
+	    }
+	}
+	None
     }
 }
 

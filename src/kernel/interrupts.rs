@@ -1,6 +1,7 @@
 #![allow(unused)]
 
 use core::ptr::{read_volatile, write_volatile};
+use crate::kernel::processes::mycpu;
 
 /* 
 ~~~~ THE DOCUMENTATION FOR THE QA7 COMPONENT CAN BE FOUND AT   
@@ -121,5 +122,66 @@ impl Interrupts {
 
     pub fn is_fiq_pending(source: InterruptSource) -> bool {
         (Self::pending_fiq() & (source as u32)) != 0
+    }
+
+    // Reads to check if IRQs are masked. Returns true if interrupts are
+    // currently enabled.
+    pub fn irq_enabled() -> bool {
+	let daif: u64;
+	unsafe {
+	    core::arch::asm!("mrs {}, DAIF",
+			     out(reg) daif,
+			     options(nostack, preserves_flags));
+	}
+	// Bit 7 is A, Bit 8 is D, Bit 1 is I (IRQ Mask), Bit 0 is F
+	// If bit is 1, it means masked otherwise unmasked.
+	((daif >> 7) & 1) == 0
+    }
+
+    pub fn irq_disable() {
+	unsafe {
+	    // Mask IRQ interrupts (Bit 1)
+	    core::arch::asm!("msr DAIFSet, 0b0010",
+			     options(nostack, preserves_flags));
+	}
+    }
+
+    pub fn irq_enable() {
+	unsafe {
+	    // Unmask IRQ interrupts (Bit 1)
+	    core::arch::asm!("msr DAIFClr, 0b0010",
+			     options(nostack, preserves_flags));
+	}
+    }
+
+    // push_off and pop_off are like enabling and disabling interrupts but it
+    // doesn't just toggle blindly. Each push_off matches a pop_off. If
+    // interrupts were originally off, these functions keep them off.
+    pub fn push_off() {
+	let enabled = Self::irq_enabled();
+	Self::irq_disable();
+
+	let c = mycpu();
+	if c.ncli == 0 {
+	    c.interrupts_enabled = enabled;
+	}
+	c.ncli += 1;
+    }
+
+    pub fn pop_off() {
+	let c = mycpu();
+	
+	if Self::irq_enabled() {
+	    panic!("pop_off: interrupts active when they should be masked");
+	}
+	
+	if c.ncli < 1 {
+	    panic!("pop_off: nesting underflow!");
+	}
+
+	c.ncli -= 1;
+	if c.ncli == 0 && c.interrupts_enabled {
+	    Self::irq_enable();
+	}
     }
 }

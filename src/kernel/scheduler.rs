@@ -1,8 +1,10 @@
 use core::panic;
 
 use crate::kernel::exceptions::ExceptionContext;
-use crate::kernel::processes::{PROCESS_TABLE, ProcessContext, MAX_PROCESSES, ProcessState};
+use crate::kernel::processes::{Cpu, PROCESS_TABLE, ProcessContext, MAX_PROCESSES, ProcessState};
 use crate::kernel::timer::PhysicalTimer;
+use crate::kernel::spinlock::Spinlock;
+use crate::kernel::processes::Process;
 use crate::dprintln;
 use crate::the_end;
 
@@ -10,7 +12,6 @@ pub static mut CURRENT_PROCESS: usize = 1; // last scheduled process index in pr
 pub const TIMESLICE_MILISECONDS: u64 = 1; 
 
 // we implement xv6 similar round robin
-
 pub struct Scheduler;
 
 impl Scheduler {
@@ -63,6 +64,10 @@ impl Scheduler {
             if let Some(process) = &mut PROCESS_TABLE[pidx] {
                 CURRENT_PROCESS = pidx;
                 process.set_state(ProcessState::Running);
+
+		// Sync struct Cpu abstraction with PID
+		Cpu::current().set_current_process(process.pid);
+		
                 ectx.update_from_pctx(&process.pctx);
                 core::arch::asm!("msr SP_EL0, {sp}", sp = in(reg) process.pctx.sp);
             } else {
@@ -103,5 +108,39 @@ impl Scheduler {
         }
 
         Self::reset_timer();
+    }
+
+    pub fn sleep(channel: *const (), mutex_guard: &Spinlock) {
+	unsafe {
+	    if let Some(current_process) = &mut PROCESS_TABLE[CURRENT_PROCESS] {
+                current_process.set_state(ProcessState::Blocked);
+                current_process.chan = channel as u64;
+            } else {
+                panic!("Scheduler::sleep() was called when no process was active!");
+            }
+
+	    // Clear Cpu tracker because the process is no longer running
+	    Cpu::current().clear_current_process();
+
+	    mutex_guard.release();
+	    
+	    core::arch::asm!("svc #0");
+	}
+    }
+
+    pub fn wakeup(channel: *const ()) {
+	let channel_addr = channel as u64;
+	unsafe {
+	    let table_ptr = core::ptr::addr_of_mut!(PROCESS_TABLE) as *mut Option<Process>;
+	    for i in 0..MAX_PROCESSES {
+		let slot = &mut *table_ptr.add(i);
+		if let Some(process) = slot {
+		    if process.state == ProcessState::Blocked && process.chan == channel_addr {
+			process.set_state(ProcessState::Ready);
+			process.chan = 0;
+		    }
+		}
+	    }
+	}
     }
 }

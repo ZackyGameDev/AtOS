@@ -1,4 +1,5 @@
 pub mod utils;
+pub mod mutex;
 pub mod peripherals;
 pub mod exceptions;
 pub mod timer;
@@ -7,3 +8,4 @@ pub mod interrupts;
 pub mod processes;
 pub mod scheduler;
 pub mod input;
+pub mod spinlock;

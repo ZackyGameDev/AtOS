@@ -7,7 +7,9 @@ use kernel::utils::get_current_el;
 use kernel::peripherals::Uart;
 use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
-use kernel::processes::{load_process};
+use kernel::processes::{load_process, Process, ProcessState};
+use kernel::spinlock::Spinlock;
+use kernel::mutex::Mutex;
 
 // pub const DEBUG_PRINTS_ENABLED: bool = true;  
 pub const DEBUG_PRINTS_ENABLED: bool = false;  
@@ -44,6 +46,108 @@ pub extern "C" fn _rust_main() -> ! {
 
     load_process("init", 0, process_a_image, 0x200000, 0x2002e0);
     load_process("process b", 0, process_b_image, 0x500000, 0x500500);
+
+    // ===================
+    // BEGIN Spinlock Test
+    // ===================
+    static LOCK_A: Spinlock = Spinlock::new("main_lock_a");
+    static LOCK_B: Spinlock = Spinlock::new("main_lock_b");
+
+    // Test #1
+    println!("-> Verifying nesting rules").unwrap();
+    Interrupts::irq_enable();
+    assert!(Interrupts::irq_enabled(), "Setup failure: IRQs should be enabled");
+
+    LOCK_A.acquire();
+    assert!(!Interrupts::irq_enabled(), "Error: lock_a did not mask hardware IRQs");
+
+    LOCK_B.acquire();
+    assert!(!Interrupts::irq_enabled(), "Error: lock_b leaked hardware IRQs");
+    LOCK_B.release();
+
+    // Lock B dropped but lock A still held
+    assert!(!Interrupts::irq_enabled(), "CRITICAL FAULT: Nested lock release leaked interrupts early!");
+    LOCK_A.release();
+
+    assert!(Interrupts::irq_enabled(), "Error: Outer lock release failed to restore active IRQs");
+    println!("   [PASSED]").unwrap();
+
+    // Test #2
+    println!("-> Verifying original rules...").unwrap();
+    Interrupts::irq_disable();
+    assert!(!Interrupts::irq_enabled());
+
+    LOCK_A.acquire();
+    LOCK_A.release();
+
+    // The relase must not force interrupts to be on if they were off initially
+    assert!(!Interrupts::irq_enabled(), "CRITICAL FAULT: Lock forced IRQs active when they were originally masked!");
+
+    // Restore to default enabled.
+    Interrupts::irq_enable();
+    println!("   [PASSED]").unwrap();
+
+
+    // Test #3
+    // Flip this boolean parameter manually to true to test lock's crash loop
+    let run_destructive_check = false;
+    if run_destructive_check {
+        println!("-> Verifying single-core recursive deadlock safety trap...").unwrap();
+        LOCK_A.acquire();
+        println!("   First acquire won. Requesting second acquire on same lock (expecting panic)...").unwrap();
+        
+        // This will force a kernel crash
+        LOCK_A.acquire();
+        
+        assert!(false, "CRITICAL FAULT: System bypassed recursive lock boundary check without a panic!");
+    }
+
+    println!("=== Spinlock checked. No problemo!~ ===").unwrap();
+    // =================
+    // END Spinlock Test
+    // =================
+
+    // ================
+    // BEGIN Mutex Test
+    // ================
+    println!("== Begin Mutex Tests ==").unwrap();
+    static TEST_MUTEX: Mutex = Mutex::new("main_test_mutex");
+
+    // Test #1: Without Scheduler
+    println!("-> Testing uncontended Mutex acquisition...").unwrap();
+    assert!(!TEST_MUTEX.is_locked(), "Error: Mutex should've been unlocked");
+
+    TEST_MUTEX.acquire();
+    assert!(TEST_MUTEX.is_locked(), "Error: Mutex should've been locked after acquire");
+
+    TEST_MUTEX.release();
+    assert!(!TEST_MUTEX.is_locked(), "Error: Mutex should've been unlocked after release");
+    println!("   [PASSED]").unwrap();
+
+    // Test #2: Simulating sleep/wakeup situation
+    // I was not quite sure about how to test this sleep/wakeup situation,
+    // naturally, I decided to delegate this to an LLM. While I have reviewed
+    // the following, I request other maintainers/reviewers to check it out.
+    if let Some(proc_init) = Process::find_by_id(1) {
+        let fake_channel = 0xCAFEBABE as *const ();
+	proc_init.set_state(ProcessState::Blocked);
+        proc_init.chan = fake_channel as u64;
+	println!("   Process 'init' simulated sleeping on channel {:#x}", fake_channel as u64).unwrap();
+	Scheduler::wakeup(fake_channel);
+	assert_eq!(
+            proc_init.state, 
+            ProcessState::Ready, 
+            "CRITICAL FAULT: Scheduler::wakeup failed to restore process back to Ready!"
+        );
+        assert_eq!(proc_init.chan, 0, "Error: Wakeup did not clear the process sleep channel");
+        println!("   [PASSED]").unwrap();
+    } else {
+	println!("   [WARNING]: Could not find process 'init' to run state test.").unwrap();
+    }
+    println!("=== Mutex and Sleep/Wakeup tracking verified cleanly! ===\n").unwrap();
+    // ================
+    // END Mutex Test
+    // ================
 
     println!("Starting the scheduler!").unwrap();
     Scheduler::start();

@@ -9,7 +9,7 @@ https://github.com/Tekki/raspberrypi-documentation/blob/b1df6ea8e135254e5feb0c8b
  */
 
 // QA7 Base for BCM2837 (Raspberry Pi 3)
-const QA7_BASE:             usize    = 0x4000_0000;
+const QA7_BASE:             usize    = 0x4000_0000 + 0xFFFF_FF80_0000_0000;
 
 // Core timers interrupts
 pub const CORE_0_CNT_INT_CTL:   *mut u32 = (QA7_BASE + 0x40) as *mut u32;

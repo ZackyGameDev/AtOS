@@ -4,7 +4,7 @@ use core::fmt::{Arguments, Result, Write};
 use core::ptr::{read_volatile, write_volatile};
 
 // MMIO Base for BCM2837 (Raspberry Pi 3)
-const MMIO_BASE:       usize    = 0x3F00_0000 + 0xFFFF_8000_0000_0000;
+const MMIO_BASE:       usize    = 0x3F00_0000 + 0xFFFF_FF80_0000_0000;
 
 // Base configuration for Auxiliaries
 const AUXENB:          *mut u32 = (MMIO_BASE + 0x0021_5004) as *mut u32;

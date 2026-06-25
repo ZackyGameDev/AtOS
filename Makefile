@@ -22,6 +22,15 @@ kernel8.img: build
 run:
 	$(QEMU) -M raspi3b -kernel kernel8.img -serial null -serial stdio
 
+debug:
+	$(QEMU) \
+		-M raspi3b \
+		-kernel kernel8.img \
+		-serial null \
+		-serial stdio \
+		-S \
+		-gdb tcp::1234
+
 # Clean everything
 clean:
 	cargo clean

@@ -3,37 +3,6 @@
 
 _start:
 
-    // MMU setup
-    ldr     x0, =TCR_EL1_VALUE
-    ldr     x0, [x0]
-    msr     TCR_EL1, x0
-    ldr     x0, =MAIR_EL1_VALUE
-    ldr     x0, [x0]
-    msr     MAIR_EL1, x0
-    isb
-
-    // linking up the kernel page tables from paging.rs
-    ldr     x2, =0x3FFFFFFF // this value might be too big to use as imm args so i load it to x2 first by assembler magic
-    ldr     x1, =PAGE_TABLE_KERNEL_L2
-    and     x1, x1, x2 // link time addresses are virtual. i have things designed so & 3FFFFFFF gives physical address (for ttbr1)
-    orr     x1, x1, #0b11
-    ldr     x0, =PAGE_TABLE_KERNEL_L1
-    and     x0, x0, x2
-    str     x1, [x0]
-    dsb ishst
-
-    msr ttbr1_el1, x0 // load page table!
-    isb
-
-
-    // turning on the MMU
-    mrs     x0, sctlr_el1
-    ldr     x1, =SCTLR_EL1_ENABLE_MMU
-    ldr     x1, [x1]
-    orr     x0, x0, x1
-    // msr     sctlr_el1, x0
-    // isb
-
 
     // set stack pointer
     ldr     x0, =_stack_top
@@ -48,6 +17,44 @@ _start:
     mrs     x0, CPACR_EL1
     orr     x0, x0, #(3 << 20)
     msr     CPACR_EL1, x0
+    isb
+
+
+    // MMU setup
+    ldr     x2, =0x3FFFFFFF // i have setup mmu for EL1 kernel space such that physical address = virtual address & 0x3FFFFFFF.
+                           // this is because the paging configuration essentially offsets entire memory space to 
+                          // virtual address 0xFFFF_FF80_0000_0000.
+
+    // setting configurations    
+    ldr     x0, =TCR_EL1_VALUE
+    and     x0, x0, x2
+    ldr     x0, [x0]
+    msr     TCR_EL1, x0
+    ldr     x0, =MAIR_EL1_VALUE
+    and     x0, x0, x2
+    ldr     x0, [x0]
+    msr     MAIR_EL1, x0
+    isb
+
+    // linking up the kernel page tables from paging.rs
+    ldr     x1, =PAGE_TABLE_KERNEL_L2
+    and     x1, x1, x2 // link time addresses are virtual. i have things designed so & 3FFFFFFF gives physical address (for ttbr1)
+    orr     x1, x1, #0b11
+    ldr     x0, =PAGE_TABLE_KERNEL_L1
+    and     x0, x0, x2
+    str     x1, [x0]
+    dsb     ishst
+
+    msr     ttbr1_el1, x0 // load page table!
+    isb
+
+    // turning on the MMU
+    mrs     x0, sctlr_el1
+    ldr     x1, =SCTLR_EL1_ENABLE_MMU
+    and     x1, x1, x2
+    ldr     x1, [x1]
+    orr     x0, x0, x1
+    msr     sctlr_el1, x0
     isb
 
     // checking current exception level

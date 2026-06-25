@@ -10,6 +10,7 @@ use kernel::interrupts::Interrupts;
 use kernel::processes::{load_process, Process, ProcessState};
 use kernel::spinlock::Spinlock;
 use kernel::mutex::Mutex;
+use kernel::paging::PageAllocator;
 
 // pub const DEBUG_PRINTS_ENABLED: bool = true;  
 pub const DEBUG_PRINTS_ENABLED: bool = false;  
@@ -22,15 +23,18 @@ unsafe extern "C" {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _rust_main() -> ! {
+    let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
+    let stack_top_addr = unsafe { &_stack_top as *const u8 as usize };
+
     Uart.init();
     PhysicalTimer::init_irq();
     Interrupts::daif_unmask_all();
+    PageAllocator::init_frames(stack_top_addr + 0x1000, 0x3EFFE000); // eye balled end of usable RAM space.
+    
     
     println!("Welcome to, AtOS.").unwrap();
     println!("Current EL is: EL{}", get_current_el()).unwrap();
     
-    let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
-    let stack_top_addr = unsafe { &_stack_top as *const u8 as usize };
     println!("Kernel ends at: {:#x}", kernel_end_addr).unwrap();
     println!("Kernel size: {} KB", kernel_end_addr / 1024).unwrap();
     println!("Stack top at: {:#x}", stack_top_addr).unwrap();

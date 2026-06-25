@@ -45,17 +45,32 @@ _start:
     str     x1, [x0]
     dsb     ishst
 
-    msr     ttbr1_el1, x0 // load page table!
+    msr     TTBR1_EL1, x0 // load page table!
+    msr     TTBR0_EL1, x0 // load the identical page table for ttbr0!
     isb
 
+    // we just loaded the same page table in ttbr0. because even though our final objective is for kernel to 
+    // work in ttbr1 virtual address space, right now once we turn mmu on, the PC is STILL at the old physical address. 
+    // so we need to load the same page table in ttbr0 so that the current physical address is still valid after mmu is turned on. 
+    // then we can do a really huge jump to the correct place in ttbr1 virtual address space after mmu is turned on.
+
     // turning on the MMU
-    mrs     x0, sctlr_el1
+    mrs     x0, SCTLR_EL1
     ldr     x1, =SCTLR_EL1_ENABLE_MMU
     and     x1, x1, x2
     ldr     x1, [x1]
     orr     x0, x0, x1
-    msr     sctlr_el1, x0
+    msr     SCTLR_EL1, x0
     isb
+
+    // now, accoeding to our mmu design, kernel is supposed to be at 0xffffff8000080000.
+    // ttbr0 is for user space we just set it right now to facilitate what we're about to do.
+    // we'll now jump to the correct place!
+
+    @ adr x16, .
+    @ ldr x17, =0xffffff8000000000
+    @ add x16, x16, x17
+    @ br  x16 
 
     // checking current exception level
     mrs     x0, CurrentEL

@@ -10,9 +10,10 @@ QEMU = qemu-system-aarch64
 # Default target
 all: kernel8.img
 
-# Build release
+# Build release and debug
 build:
 	cargo build --release --target $(TARGET)
+	cargo build --target $(TARGET)
 
 # Convert ELF to raw binary
 kernel8.img: build

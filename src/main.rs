@@ -27,8 +27,8 @@ pub extern "C" fn _rust_main() -> ! {
     let stack_top_addr = unsafe { &_stack_top as *const u8 as usize };
 
     Uart.init();
-    PhysicalTimer::init_irq();
-    Interrupts::daif_unmask_all();
+    // PhysicalTimer::init_irq();
+    // Interrupts::daif_unmask_all();
     // PageAllocator::init_frames(stack_top_addr + 0x1000, 0x3EFFE000); // eye balled end of usable RAM space.
     
     

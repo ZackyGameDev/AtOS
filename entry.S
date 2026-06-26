@@ -3,35 +3,18 @@
 
 _start:
 
-
-    // set stack pointer
-    ldr     x0, =_stack_top
-    mov     sp, x0
-
-    // load exception vector table for EL1
-    adr     x0, el1_vectors
-    msr     VBAR_EL1, x0
-    isb
-
-    // diables fp/simd interrupts 
-    mrs     x0, CPACR_EL1
-    orr     x0, x0, #(3 << 20)
-    msr     CPACR_EL1, x0
-    isb
-
-
     // MMU setup
     ldr     x2, =0x3FFFFFFF // i have setup mmu for EL1 kernel space such that physical address = virtual address & 0x3FFFFFFF.
                            // this is because the paging configuration essentially offsets entire memory space to 
                           // virtual address 0xFFFF_FF80_0000_0000.
 
-    // setting configurations    
+    // setting configurations 
     ldr     x0, =TCR_EL1_VALUE
-    and     x0, x0, x2
+    and     x0, x0, x2 // to physical address
     ldr     x0, [x0]
     msr     TCR_EL1, x0
     ldr     x0, =MAIR_EL1_VALUE
-    and     x0, x0, x2
+    and     x0, x0, x2 // to physical address
     ldr     x0, [x0]
     msr     MAIR_EL1, x0
     isb
@@ -41,7 +24,7 @@ _start:
     and     x1, x1, x2 // link time addresses are virtual. i have things designed so & 3FFFFFFF gives physical address (for ttbr1)
     orr     x1, x1, #0b11
     ldr     x0, =PAGE_TABLE_KERNEL_L1
-    and     x0, x0, x2
+    and     x0, x0, x2 // to physical address
     str     x1, [x0]
     dsb     ishst
 
@@ -67,10 +50,10 @@ _start:
     // ttbr0 is for user space we just set it right now to facilitate what we're about to do.
     // we'll now jump to the correct place!
 
-    @ adr x16, .
-    @ ldr x17, =0xffffff8000000000
-    @ add x16, x16, x17
-    @ br  x16 
+    adr x16, transition_to_el1
+    br  x16 
+
+transition_to_el1:
 
     // checking current exception level
     mrs     x0, CurrentEL
@@ -90,14 +73,27 @@ _start:
     msr     SPSR_EL2, x0
 
     // finally set the ERET PC
-    adr     x0, _rust_main
+    adr     x0, el1_start
     msr     ELR_EL2, x0
 
     eret // insane
 
 el1_start:
-    bl _rust_main
 
-1:
-    wfe
-    b 1b
+    // set stack pointer
+    ldr     x0, =_stack_top
+    mov     sp, x0
+
+    // load exception vector table for EL1
+    ldr     x0, =el1_vectors
+    msr     VBAR_EL1, x0
+    isb
+
+    // diables fp/simd interrupts 
+    mrs     x0, CPACR_EL1
+    orr     x0, x0, #(3 << 20)
+    msr     CPACR_EL1, x0
+    isb
+
+    ldr     x16, =_rust_main // without this roundabout way, it would do a relative jump, allegedly.
+    br      x16                  // Absolute jump directly into higher-half TTBR1 space!

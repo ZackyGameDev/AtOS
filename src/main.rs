@@ -29,7 +29,7 @@ pub extern "C" fn _rust_main() -> ! {
     Uart.init();
     PhysicalTimer::init_irq();
     Interrupts::daif_unmask_all();
-    // PageAllocator::init_frames(stack_top_addr + 0x1000, 0x3EFFE000); // eye balled end of usable RAM space.
+    PageAllocator::init_frames(stack_top_addr + 0x1000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
     
     
     println!("Welcome to, AtOS.").unwrap();

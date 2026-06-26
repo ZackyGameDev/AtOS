@@ -136,7 +136,7 @@ const fn kernel_l2_block_descriptor(pa: u64, attr: u64) -> u64 {
         | UXN
 }
 
-const fn kernel_l2() -> PageTable {
+const fn kernel_l2_0() -> PageTable {
     let mut table = PageTable {
         entry: [0; PAGE_ENTRIES],
     };
@@ -161,10 +161,40 @@ const fn kernel_l2() -> PageTable {
     table
 }
 
+const fn kernel_l2_1() -> PageTable {
+    let mut table = PageTable {
+        entry: [0; PAGE_ENTRIES],
+    };
+
+    let mut i = 0;
+
+    while i < PAGE_ENTRIES {
+        let pa = ((i+PAGE_ENTRIES) as u64) << 21;
+
+        let attr =
+            if pa >= 0x3F00_0000 {
+                ATTR_DEVICE
+            } else {
+                ATTR_NORMAL
+            };
+
+        table.entry[i] = kernel_l2_block_descriptor(pa, attr);
+
+        i += 1;
+    }
+
+    table
+}
+
 #[used]
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".page_tables.kernel.l2")]
-pub static PAGE_TABLE_KERNEL_L2: PageTable = kernel_l2();
+pub static PAGE_TABLE_KERNEL_L2_0: PageTable = kernel_l2_0();
+
+#[used]
+#[unsafe(no_mangle)]
+#[unsafe(link_section = ".page_tables.kernel.l2")]
+pub static PAGE_TABLE_KERNEL_L2_1: PageTable = kernel_l2_1();
 
 #[used]
 #[unsafe(no_mangle)]
@@ -173,7 +203,8 @@ pub static mut PAGE_TABLE_KERNEL_L1: PageTable = PageTable {
     entry: [0; PAGE_ENTRIES],
 };
 
-// `PAGE_TABLE_KERNEL_L1.entry[0] = &PAGE_TABLE_KERNEL_L2` is set in entry.S at boot.
+// `PAGE_TABLE_KERNEL_L1.entry[0] = &PAGE_TABLE_KERNEL_L2_0` is set in entry.S at boot.
+// and so is `PAGE_TABLE_KERNEL_L1.entry[1] = &PAGE_TABLE_KERNEL_L2_1`
 // the reason we do not do it here is because we need the page table setup before jumping to rust.
 // so we can't expect to setup the page table here in rust after jumping to it.
 // this is also why we strictly use statics and const the entire time

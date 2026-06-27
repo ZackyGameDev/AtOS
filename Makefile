@@ -21,7 +21,7 @@ kernel8.img: build
 
 # Run in QEMU (Emulating Raspberry Pi 3B+ with Mini UART redirected to terminal)
 run:
-	$(QEMU) -M raspi3b -kernel kernel8.img -serial null -serial stdio
+	$(QEMU) -M raspi3b -kernel kernel8.img -serial null -serial stdio  -display none
 
 debug:
 	$(QEMU) \

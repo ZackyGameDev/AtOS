@@ -1,6 +1,23 @@
 qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio
-Welcome to, AtOS.
-Current EL is: EL1
-Kernel ends at: 0xffffff8000090000
-Kernel size: 18014397972611648 KB
-Stack top at: 0xffffff8000098000
+                  ###                       AtOS 0.1.0-dev
+                ##*  ##                     ──────────────────────────────────────
+                ##    #                     Architecture:  AArch64
+                ##    #                     CPU:           Cortex-A53
+                ##    #                     EL:            EL1 → EL0
+              ## :#|  #                     MMU:           ✓ (39-bit 2 Level VA space)
+            %#  = #|  %                     Kernel VA:     0xFFFF_FF80_0008_0000
+          =%* =-  =|  %                     Scheduler:     Round Robin
+        +%# ==    =|  %                     Timer:         PhysicalNonSecure
+       %% ==      =|  %%%%%%%%%%%%%%%%%%    IO:            Mini UART
+     %% ===========|=================- %    Build:         2026-06-27 16:08:06
+   %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
+ %% :+            =| +   = \==\      %%#    Repository:    https://github.com/ZackyGameDev/AtOS
+#%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
+   ############*% +|     %%********         git hash:      612b898
+                % +|   %%               
+                % +| %%                 
+                %  %%                   
+                 %%                     
+
+
+

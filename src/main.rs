@@ -21,7 +21,7 @@ unsafe extern "C" {
     unsafe static _stack_top: u8;
 }
 
-fn atos_welcome_message() {
+fn show_welcome_ascii() {
     const INTRO: &str = 
         include_str!(concat!(env!("OUT_DIR"), "/atos_intro_generated.txt")); // obtained from build.rs
 
@@ -39,7 +39,8 @@ pub extern "C" fn _rust_main() -> ! {
     Interrupts::daif_unmask_all();
     PageAllocator::init_frames(stack_top_addr + 0x1000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
     
-    atos_welcome_message();    
+    show_welcome_ascii();
+    println!("Welcome, to AtOS... \nKernel is running in EL{}.", get_current_el()).unwrap();    
 
     // println!("Kernel done. Loading two processes for demonstration.").unwrap();
 
@@ -158,7 +159,7 @@ pub extern "C" fn _rust_main() -> ! {
     // println!("Starting the scheduler!").unwrap();
     // Scheduler::start();
 
-    loop {}
+    the_end()
     
 }
 
@@ -205,7 +206,6 @@ pub fn the_end() -> ! {
 
 use core::panic::PanicInfo;
 
-use crate::kernel::scheduler::Scheduler;
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
     println!("Kernel Panicked!: {}", panic).unwrap();

@@ -21,3 +21,7 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio
 
 
 
+Welcome, to AtOS... 
+Kernel is running in EL1.
+All processes have completed/terminated.
+There is nothing left to do. You may power off your device now.

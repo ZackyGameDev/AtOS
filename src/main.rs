@@ -21,6 +21,14 @@ unsafe extern "C" {
     unsafe static _stack_top: u8;
 }
 
+fn atos_welcome_message() {
+    const INTRO: &str = 
+        include_str!(concat!(env!("OUT_DIR"), "/atos_intro_generated.txt")); // obtained from build.rs
+
+    println!("{INTRO}").unwrap();
+    
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn _rust_main() -> ! {
     let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
@@ -31,13 +39,7 @@ pub extern "C" fn _rust_main() -> ! {
     Interrupts::daif_unmask_all();
     PageAllocator::init_frames(stack_top_addr + 0x1000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
     
-    
-    println!("Welcome to, AtOS.").unwrap();
-    println!("Current EL is: EL{}", get_current_el()).unwrap();
-    
-    println!("Kernel ends at: {:#x}", kernel_end_addr).unwrap();
-    println!("Kernel size: {} KB", kernel_end_addr / 1024).unwrap();
-    println!("Stack top at: {:#x}", stack_top_addr).unwrap();
+    atos_welcome_message();    
 
     // println!("Kernel done. Loading two processes for demonstration.").unwrap();
 

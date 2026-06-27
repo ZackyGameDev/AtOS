@@ -94,7 +94,7 @@ impl PageAllocator {
 
 
 
-/* ~~~ kernel EL1 paging (hardcoded) ~~~ */
+/* ~~~ kernel TTBR1 EL1 paging (hardcoded) ~~~ */
 
 // through the entire section we use const functions to generate the page tables at compile time.
 

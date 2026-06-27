@@ -1,6 +1,6 @@
 # I'm gonna be honest i asked chatgpt to generate this idk how this works
 TARGET = aarch64-unknown-none
-KERNEL = at-os
+KERNEL = AtOS
 BUILD = target/$(TARGET)/release/$(KERNEL)
 
 OBJCOPY = aarch64-linux-gnu-objcopy

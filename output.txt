@@ -9,17 +9,15 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio
           =%* =-  =|  %                     Scheduler:     Round Robin
         +%# ==    =|  %                     Timer:         PhysicalNonSecure
        %% ==      =|  %%%%%%%%%%%%%%%%%%    IO:            Mini UART
-     %% ===========|=================- %    Build:         2026-06-27 16:08:06
+     %% ===========|=================- %    Build:         2026-06-27 16:20:02
    %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
  %% :+            =| +   = \==\      %%#    Repository:    https://github.com/ZackyGameDev/AtOS
 #%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
-   ############*% +|     %%********         git hash:      612b898
+   ############*% +|     %%********         git hash:      1e12b35
                 % +|   %%               
                 % +| %%                 
                 %  %%                   
                  %%                     
-
-
 
 Welcome, to AtOS... 
 Kernel is running in EL1.

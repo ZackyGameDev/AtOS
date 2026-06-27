@@ -62,6 +62,8 @@ fn main() {
     intro = intro.replace("{build}", &build_time);
     intro = intro.replace("{rust}", &rust_version);
     intro = intro.replace("{git}", &git_hash);
+    intro = intro.replace("{repository}", env!("CARGO_PKG_REPOSITORY"));
+    intro = intro.replace("{documentation}", env!("CARGO_PKG_HOMEPAGE"));
 
     let out_path = Path::new(&env::var("OUT_DIR").unwrap())
         .join("atos_intro_generated.txt");

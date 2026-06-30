@@ -3,6 +3,8 @@
 use crate::kernel::exceptions::ExceptionContext;
 use crate::dprintln;
 
+use crate::kernel::elf::{Elf64Hdr, Elf64ProgHdr, PT_LOAD};
+
 pub const MAX_PROCESSES: usize = 50;
 pub const MAX_CPUS: usize = 1; // for now
 
@@ -197,4 +199,80 @@ pub fn load_process(process_name: &str, parent_pid: u64, process_image: &'static
         panic!("load_process: {}", e);
     }
 
+}
+
+// Made a new one for "backwards compatibility" until it gets merged
+pub fn load_elf_process(process_name: &str, parent_pid: u64, bytes: &'static [u8]) {
+    let header = match Elf64Hdr::mkfrombytes(bytes) {
+        Some(h) => h,
+        None => {
+            dprintln!("load_elf_process: invalid elf file header '{}'",
+                      process_name);
+            return;
+        }
+    };
+
+    let mut loaded_any_segments = false;
+    let mut max_allocated_addr = 0u64;
+
+    let ph_size = core::mem::size_of::<Elf64ProgHdr>();
+    let start = header.phoff as usize;
+    let count = header.phnum as usize;
+
+    for i in 0..count {
+        let offset = start + (i * ph_size);
+        if offset + ph_size > bytes.len() {
+            break;
+        }
+
+        let ph = unsafe {
+            core::ptr::read_unaligned(bytes.as_ptr().add(offset) as *const Elf64ProgHdr)
+        };
+
+        if ph.r#type == PT_LOAD {
+            // Since paging is under construction, use the physical address
+            let dst = ph.phyaddr;
+
+            unsafe {
+                let src = bytes.as_ptr().add(ph.offset as usize);
+
+                // copy init code and data from elf to ram
+                core::ptr::copy_nonoverlapping(
+                    src,
+                    dst as *mut u8,
+                    ph.filesize as usize
+                );
+
+                if ph.memsize > ph.filesize {
+                    let bss_start = dst + ph.filesize;
+                    let bss_size = ph.memsize - ph.filesize;
+                    core::ptr::write_bytes(bss_start as *mut u8, 0, bss_size as usize);
+                }
+            }
+
+            // have segment_end used by the program to position stack
+            let segment_end = dst + ph.memsize;
+            if segment_end > max_allocated_addr {
+                max_allocated_addr = segment_end;
+            }
+
+            loaded_any_segments = true;
+        }
+    }
+    
+    if !loaded_any_segments {
+        dprintln!("load_elf_process: no loadable segment found in '{}'", process_name);
+        return;
+    }
+
+    let entry_point = header.entry;
+
+    // set stack top to just above the highest allocated program segment 16-byte aligned
+    let stack_top: u64 = (max_allocated_addr + 0x4000) & !0xf;
+
+    let process: Process = Process::new(process_name, parent_pid, entry_point, stack_top);
+    if let Err(e) = add_process_to_ptable(process) {
+        dprintln!("{}", e);
+        panic!("load_elf_process: {}", e);
+    }
 }

@@ -7,14 +7,14 @@ use kernel::utils::get_current_el;
 use kernel::peripherals::Uart;
 use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
-use kernel::processes::{load_process, Process, ProcessState};
+use kernel::processes::{load_elf_process, load_process, Process, ProcessState};
 use kernel::spinlock::Spinlock;
 use kernel::mutex::Mutex;
 
-// pub const DEBUG_PRINTS_ENABLED: bool = true;  
-pub const DEBUG_PRINTS_ENABLED: bool = false;  
+// pub const DEBUG_PRINTS_ENABLED: bool = true;
+pub const DEBUG_PRINTS_ENABLED: bool = false;
 
-// this is to read from the linker-- the end of kernel in memory and top of the stack. 
+// this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {
     unsafe static _kernel_top: u8;
     unsafe static _stack_top: u8;
@@ -25,10 +25,10 @@ pub extern "C" fn _rust_main() -> ! {
     Uart.init();
     PhysicalTimer::init_irq();
     Interrupts::daif_unmask_all();
-    
+
     println!("Welcome to, AtOS.").unwrap();
     println!("Current EL is: EL{}", get_current_el()).unwrap();
-    
+
     let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
     let stack_top_addr = unsafe { &_stack_top as *const u8 as usize };
     println!("Kernel ends at: {:#x}", kernel_end_addr).unwrap();
@@ -41,12 +41,22 @@ pub extern "C" fn _rust_main() -> ! {
 
     println!("Physical Timer frequency: {} Hz", frq).unwrap();
 
-    let process_a_image: &'static [u8] = include_bytes!("user/init.bin");
-    let process_b_image: &'static [u8] = include_bytes!("user/b.bin");
 
-    load_process("init", 0, process_a_image, 0x200000, 0x2002e0);
+    // Just realised that both of them will start at the same addr so we might
+    // need two different linker scripts to set their offset, but for now, I've
+    // only checked if ONE process runs, and the other runs as an image. The
+    // scheduler works as expected.
+    
+    //let process_a_image: &'static [u8] = include_bytes!("user/init.bin");
+    let process_b_image: &'static [u8] = include_bytes!("user/b.bin");
+    //load_process("init", 0, process_a_image, 0x200000, 0x2002e0);
     load_process("process b", 0, process_b_image, 0x500000, 0x500500);
 
+    let process_a: &'static [u8] = include_bytes!("user/build/init");
+    //let process_b: &'static [u8] = include_bytes!("user/build/b");
+    load_elf_process("process A", 0, process_a);
+    //load_elf_process("process B", 0, process_b);
+    
     // ===================
     // BEGIN Spinlock Test
     // ===================
@@ -95,10 +105,10 @@ pub extern "C" fn _rust_main() -> ! {
         println!("-> Verifying single-core recursive deadlock safety trap...").unwrap();
         LOCK_A.acquire();
         println!("   First acquire won. Requesting second acquire on same lock (expecting panic)...").unwrap();
-        
+
         // This will force a kernel crash
         LOCK_A.acquire();
-        
+
         assert!(false, "CRITICAL FAULT: System bypassed recursive lock boundary check without a panic!");
     }
 
@@ -130,19 +140,19 @@ pub extern "C" fn _rust_main() -> ! {
     // the following, I request other maintainers/reviewers to check it out.
     if let Some(proc_init) = Process::find_by_id(1) {
         let fake_channel = 0xCAFEBABE as *const ();
-	proc_init.set_state(ProcessState::Blocked);
+        proc_init.set_state(ProcessState::Blocked);
         proc_init.chan = fake_channel as u64;
-	println!("   Process 'init' simulated sleeping on channel {:#x}", fake_channel as u64).unwrap();
-	Scheduler::wakeup(fake_channel);
-	assert_eq!(
-            proc_init.state, 
-            ProcessState::Ready, 
+        println!("   Process 'init' simulated sleeping on channel {:#x}", fake_channel as u64).unwrap();
+        Scheduler::wakeup(fake_channel);
+        assert_eq!(
+            proc_init.state,
+            ProcessState::Ready,
             "CRITICAL FAULT: Scheduler::wakeup failed to restore process back to Ready!"
         );
         assert_eq!(proc_init.chan, 0, "Error: Wakeup did not clear the process sleep channel");
         println!("   [PASSED]").unwrap();
     } else {
-	println!("   [WARNING]: Could not find process 'init' to run state test.").unwrap();
+        println!("   [WARNING]: Could not find process 'init' to run state test.").unwrap();
     }
     println!("=== Mutex and Sleep/Wakeup tracking verified cleanly! ===\n").unwrap();
     // ================
@@ -151,16 +161,16 @@ pub extern "C" fn _rust_main() -> ! {
 
     println!("Starting the scheduler!").unwrap();
     Scheduler::start();
-    
+
 }
 
 /* For input testing */
 // #[unsafe(no_mangle)]
 // pub extern "C" fn _rust_main() -> ! {
 //     Uart.init();
-    
+
 //     // We keep interrupts OFF for this test so the timer doesn't take control away
-    
+
 //     println!("=== AtOS Raw Input Test ===").unwrap();
 //     println!("Testing kernel space getline directly. Type a line and hit enter:").unwrap();
 
@@ -170,7 +180,7 @@ pub extern "C" fn _rust_main() -> ! {
 
 //     println!("\n--- Test Results ---").unwrap();
 //     println!("Bytes read: {}", bytes_read).unwrap();
-    
+
 //     if let Ok(s) = core::str::from_utf8(&test_buffer[..bytes_read]) {
 //         println!("Buffer contains: {}", s).unwrap();
 //     } else {
@@ -181,7 +191,7 @@ pub extern "C" fn _rust_main() -> ! {
 //     loop { core::hint::spin_loop(); }
 // }
 
-// usually, an os has a root user process which spawns all the other user processes. 
+// usually, an os has a root user process which spawns all the other user processes.
 // the scheduler should always have at least one process to switch to.
 // But if there are no more processes in the process table, one could imagine
 // that a scenario like that would only occur when the user exited out of all

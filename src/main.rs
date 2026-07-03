@@ -7,15 +7,15 @@ use kernel::utils::get_current_el;
 use kernel::peripherals::Uart;
 use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
-use kernel::processes::{load_process, Process, ProcessState};
+use kernel::processes::{load_elf_process, load_process, Process, ProcessState};
 use kernel::spinlock::Spinlock;
 use kernel::mutex::Mutex;
 use kernel::paging::PageAllocator;
 
-// pub const DEBUG_PRINTS_ENABLED: bool = true;  
-pub const DEBUG_PRINTS_ENABLED: bool = false;  
+// pub const DEBUG_PRINTS_ENABLED: bool = true;
+pub const DEBUG_PRINTS_ENABLED: bool = false;
 
-// this is to read from the linker-- the end of kernel in memory and top of the stack. 
+// this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {
     unsafe static _kernel_top: u8;
     unsafe static _stack_top: u8;
@@ -167,9 +167,9 @@ pub extern "C" fn _rust_main() -> ! {
 // #[unsafe(no_mangle)]
 // pub extern "C" fn _rust_main() -> ! {
 //     Uart.init();
-    
+
 //     // We keep interrupts OFF for this test so the timer doesn't take control away
-    
+
 //     println!("=== AtOS Raw Input Test ===").unwrap();
 //     println!("Testing kernel space getline directly. Type a line and hit enter:").unwrap();
 
@@ -179,7 +179,7 @@ pub extern "C" fn _rust_main() -> ! {
 
 //     println!("\n--- Test Results ---").unwrap();
 //     println!("Bytes read: {}", bytes_read).unwrap();
-    
+
 //     if let Ok(s) = core::str::from_utf8(&test_buffer[..bytes_read]) {
 //         println!("Buffer contains: {}", s).unwrap();
 //     } else {
@@ -190,7 +190,7 @@ pub extern "C" fn _rust_main() -> ! {
 //     loop { core::hint::spin_loop(); }
 // }
 
-// usually, an os has a root user process which spawns all the other user processes. 
+// usually, an os has a root user process which spawns all the other user processes.
 // the scheduler should always have at least one process to switch to.
 // But if there are no more processes in the process table, one could imagine
 // that a scenario like that would only occur when the user exited out of all

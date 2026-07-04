@@ -69,10 +69,12 @@ impl Scheduler {
                 Cpu::current().set_current_process(process.pid);
 
                 ectx.update_from_pctx(&process.pctx);
-                core::arch::asm!("msr SP_EL0, {sp}", sp = in(reg) process.pctx.sp);
             } else {
                 panic!("in Scheduler::load_pctx(), process not found!");
-                // panic, because this function is only called in schedule() and ONLY after choose_next_process() returns Some(pidx). so if for some mysterious reason the process just disappeared after being chosen, we might want kernel to scream.
+                // panic, because this function is only called in schedule() and 
+                // ONLY after choose_next_process() returns Some(pidx). so if for 
+                // some mysterious reason the process just disappeared after being
+                // chosen, we might want kernel to scream.
             }
         }
     }

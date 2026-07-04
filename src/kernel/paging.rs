@@ -237,6 +237,41 @@ impl PageAllocator {
     } 
 
 
+    pub fn free_page_table(ttbr0_val: Option<u64>) {
+        let translation_table_pa = match ttbr0_val {
+            Some(pa) => pa,
+            None => {
+                let mut ttbr0: u64;
+                unsafe { core::arch::asm!("mrs {}, ttbr0_el1", out(reg) ttbr0) };
+                ttbr0 & 0x0000_FFFF_FFFF_F000
+            }
+        };
+
+        // free all pages in the page table
+        for l1_i in 0..PAGE_ENTRIES {
+            unsafe {
+                let l1 = ttbr1_to_va!(translation_table_pa) as *mut PageTable;
+                if (*l1).entry[l1_i] & 0b11 != 0b11 { continue; /* invalid entry/unhandled block situation */ } 
+                let l2 = ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
+                for l2_i in 0..PAGE_ENTRIES {
+                    if (*l2).entry[l2_i] & 0b11 != 0b11 { continue; /* invalid entry/unhandled block situation */ }
+                    let l3 = ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
+                    for l3_i in 0..PAGE_ENTRIES {
+                        if (*l3).entry[l3_i] & 0b11 != 0b11 { continue; /* invalid entry */ }
+                        let frame_pa = (*l3).entry[l3_i] & 0x0000_FFFF_FFFF_F000;
+                        Self::add_free_frame(ttbr1_to_va!(frame_pa));
+                    }
+                    Self::add_free_frame(ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000));
+                }
+                Self::add_free_frame(ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000));
+            }
+        }
+
+        // finally free the top level page table itself
+        Self::add_free_frame(ttbr1_to_va!(translation_table_pa));
+
+    }
+
     // basically takes in a virtual address (from ttbr0 va range) and allocates a page for 
     // it in the given/loaded ttbr0 translation table. if the page is already allocated, it panics.
     // returns the physical address of the frame in which the page is allocated.

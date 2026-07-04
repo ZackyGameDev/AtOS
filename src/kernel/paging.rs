@@ -1,3 +1,32 @@
+/*
+
+TERMINOLOGY REFERENCE:
+
+FRAME refers to the physical memory block.
+PAGE refers to the virtual memory block of the process. (common lingo)
+
+FRAME_PA refers to the physical address of some frame on the physical RAM, 
+it may or may not be currently used right now.
+
+FRAME_VA refers to the virtual address of some frame, in the ttbr1 virtual
+address space. So basically kernel's virtual address space. 
+
+so VA in frame always refers to a virtual address in ttbr1 space, 
+which represents the physical memory as it is.
+
+PAGE_VA refers to the virtual address of some page, in the ttbr0 virtual 
+address space, so basically the process's virtual address space.
+
+so a VA in page always refers to a virtual address in ttbr0 space, which is the 
+virtualized memory for the process.
+
+in ttbr0 you find the clean, virtualized memory for the user process to freely use
+
+in ttbr1 space you get a look of the actual 1GB of physical RAM in the same order
+as the physical RAM exists. 
+
+*/
+
 #![allow(static_mut_refs)]
 
 use crate::{ttbr1_to_pa, ttbr1_to_va, dprintln};
@@ -247,29 +276,28 @@ impl PageAllocator {
             }
         };
 
-        // free all pages in the page table
-        for l1_i in 0..PAGE_ENTRIES {
-            unsafe {
-                let l1 = ttbr1_to_va!(translation_table_pa) as *mut PageTable;
-                if (*l1).entry[l1_i] & 0b11 != 0b11 { continue; /* invalid entry/unhandled block situation */ } 
-                let l2 = ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
-                for l2_i in 0..PAGE_ENTRIES {
-                    if (*l2).entry[l2_i] & 0b11 != 0b11 { continue; /* invalid entry/unhandled block situation */ }
-                    let l3 = ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
-                    for l3_i in 0..PAGE_ENTRIES {
-                        if (*l3).entry[l3_i] & 0b11 != 0b11 { continue; /* invalid entry */ }
-                        let frame_pa = (*l3).entry[l3_i] & 0x0000_FFFF_FFFF_F000;
-                        Self::add_free_frame(ttbr1_to_va!(frame_pa));
-                    }
-                    Self::add_free_frame(ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000));
-                }
-                Self::add_free_frame(ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000));
-            }
+        // recursively traverse the entire table for allocated valid page entries 
+        Self::do_free_table_recursive(translation_table_pa, 1);        
+    }
+
+    fn do_free_table_recursive(ttpa: u64, level: u8) {
+        if level > 3 {
+            return;
         }
 
-        // finally free the top level page table itself
-        Self::add_free_frame(ttbr1_to_va!(translation_table_pa));
-
+        let table = ttbr1_to_va!(ttpa) as *mut PageTable;
+        for i in 0..PAGE_ENTRIES {
+            let entry = unsafe { (*table).entry[i] };
+            if entry & 0b11 == 0b11 { // valid entry
+                if level < 3 {
+                    Self::do_free_table_recursive(entry & 0x0000_FFFF_FFFF_F000, level + 1);
+                } else {
+                    Self::add_free_frame(ttbr1_to_va!(entry & 0x0000_FFFF_FFFF_F000));
+                }
+            }
+        }
+        
+        Self::add_free_frame(ttbr1_to_va!(ttpa));        
     }
 
     // basically takes in a virtual address (from ttbr0 va range) and allocates a page for 

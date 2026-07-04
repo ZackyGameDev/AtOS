@@ -68,7 +68,7 @@ fn print_exception_context(ctx: &ExceptionContext) -> () {
     println!("ELR  : {:#018x}", ctx.elr).unwrap();
     println!("SPSR : {:#018x}", ctx.spsr).unwrap();
     println!("ESR  : {:#018x}", ctx.esr).unwrap();
-    println!("FAR  : {:#018x}", ctx.far).unwrap();;
+    println!("FAR  : {:#018x}", ctx.far).unwrap();
     println!("ESR  : {:#018x}", ctx.esr).unwrap();
     println!("FAR  : {:#018x}", ctx.far).unwrap();
     println!("SP_EL0 : {:#018x}", ctx.sp_el0).unwrap();
@@ -140,7 +140,7 @@ pub extern "C" fn handle_exception_el1(ctx: &mut ExceptionContext) {
 
     // if it came from EL0, then we need to update PCB of the process interrupted.
     if was_from_user_el0(ctx) {
-        let new_pctx = ProcessContext::from_ectx(ctx0);
+        let new_pctx = ProcessContext::from_ectx(ctx);
 
         Scheduler::update_last_running_pctx(&new_pctx);
     }

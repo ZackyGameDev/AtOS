@@ -11,6 +11,7 @@ use kernel::processes::{/*load_elf_process, load_process,*/ Process, ProcessStat
 use kernel::spinlock::Spinlock;
 use kernel::mutex::Mutex;
 use kernel::paging::PageAllocator;
+use kernel::scheduler::Scheduler;
 
 // pub const DEBUG_PRINTS_ENABLED: bool = true;
 pub const DEBUG_PRINTS_ENABLED: bool = false;
@@ -42,11 +43,20 @@ pub extern "C" fn _rust_main() -> ! {
     show_welcome_ascii();
     println!("Welcome, to AtOS... \nKernel is running in EL{}.", get_current_el()).unwrap();    
 
-    // println!("Kernel done. Loading two processes for demonstration.").unwrap();
+    println!("Kernel done. Loading two processes for demonstration.").unwrap();
 
-    // let frq = PhysicalTimer::read_frq();
+    let frq = PhysicalTimer::read_frq();
 
-    // println!("Physical Timer frequency: {} Hz", frq).unwrap();
+    println!("Physical Timer frequency: {} Hz", frq).unwrap();
+
+    let process_a_elf: &'static [u8] = include_bytes!("user/build/init");
+    let process_b_elf: &'static [u8] = include_bytes!("user/build/b");
+
+    PageAllocator::load_elf_process("init", 0, process_a_elf);
+    PageAllocator::load_elf_process("process b", 0, process_b_elf);
+
+    println!("Starting the scheduler!").unwrap();
+    Scheduler::start();
 
     // let process_a_image: &'static [u8] = include_bytes!("user/init.bin");
     // let process_b_image: &'static [u8] = include_bytes!("user/b.bin");

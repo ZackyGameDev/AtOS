@@ -79,15 +79,16 @@ pub struct ProcessContext {
     pub sp: u64,
     pub elr: u64, // address to jump to when jumping to this process
     pub spsr: u64,
+    pub ttbr0: u64, // translation table base address for this process's user space
 }
 
 impl ProcessContext {
-    pub fn new(entry_point: u64, sp: u64) -> Self {
-        Self { elr: entry_point, sp, ..Default::default() }
+    pub fn new(entry_point: u64, sp: u64, ttbr0: u64) -> Self {
+        Self { elr: entry_point, sp, ttbr0, ..Default::default() }
     }
 
-    pub fn from_ectx(ctx: &ExceptionContext, sp: u64) -> Self {
-        let mut pctx = Self::new(ctx.elr, sp);
+    pub fn from_ectx(ctx: &ExceptionContext) -> Self {
+        let mut pctx = Self::new(ctx.elr, ctx.sp_el0, ctx.ttbr0);
         pctx.x.copy_from_slice(&ctx.x);
         pctx.spsr = ctx.spsr;
         pctx
@@ -107,7 +108,7 @@ pub struct Process {
 }
 
 impl Process {
-    pub fn new(name: &str, parent_pid: u64, entry_point: u64, sp: u64) -> Self {
+    pub fn new(name: &str, parent_pid: u64, entry_point: u64, sp: u64, ttbr0: u64) -> Self {
         let pid = unsafe {
             let pid = NEXT_PID;
             NEXT_PID += 1;
@@ -124,7 +125,7 @@ impl Process {
                name: name_bytes,
                state: ProcessState::Ready,
                parent_pid,
-               pctx: ProcessContext::new(entry_point, sp),
+               pctx: ProcessContext::new(entry_point, sp, ttbr0),
                chan: 0, }
     }
 
@@ -166,7 +167,7 @@ impl Process {
     }
 }
 
-fn add_process_to_ptable(process: Process) -> Result<(), &'static str> {
+pub fn add_process_to_ptable(process: Process) -> Result<(), &'static str> {
     unsafe {
         for slot in PROCESS_TABLE.iter_mut() {
             if slot.is_none() {
@@ -178,6 +179,10 @@ fn add_process_to_ptable(process: Process) -> Result<(), &'static str> {
     Err("Process table is full")
 }
 
+
+/* 
+
+Below methods are deprecated. They only worked before paging was implemented.
 
 pub fn load_process(process_name: &str, parent_pid: u64, process_image: &'static [u8], process_addr: u64, entry_point: u64) {
     unsafe {
@@ -276,3 +281,5 @@ pub fn load_elf_process(process_name: &str, parent_pid: u64, bytes: &'static [u8
         panic!("load_elf_process: {}", e);
     }
 }
+
+*/

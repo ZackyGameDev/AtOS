@@ -1,63 +1,76 @@
-qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio
-Welcome to, AtOS.
-Current EL is: EL1
-Kernel ends at: 0x92d60
-Kernel size: 587 KB
-Stack top at: 0x96d60
+qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio  -display none
+                                            AtOS 0.1.0-dev
+                     #                      ──────────────────────────────────────
+                    ##                      Architecture:  AArch64
+                  ## #                      CPU:           Cortex-A53
+                ##   #                      EL:            EL1 → EL0
+              ## :#| #                      MMU:           ✓ (39-bit 2 Level VA space)
+            %#  = #| %                      Kernel VA:     0xFFFF_FF80_0008_0000
+          =%* =-  =| %                      Scheduler:     Round Robin
+        +%# ==    =| %                      Timer:         PhysicalNonSecure
+       %% ==      =| %%%%%%%%%%%%%%%%%%%%%  IO:            Mini UART
+     %% ===========|=================-  %   Build:         2026-07-05 01:56:51
+   %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
+ %% :+            =| +   = \==\      %%     Repository:    https://github.com/ZackyGameDev/AtOS
+#%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
+   ############*% +|     %%********         git hash:      c127ca9
+                % +|   %%               
+                % +| %%                 
+                %  %%                   
+                 %%                     
+
+Welcome, to AtOS... 
+Kernel is running in EL1.
 Kernel done. Loading two processes for demonstration.
 Physical Timer frequency: 62500000 Hz
 Starting the scheduler!
 hello this code is running in the init program!
 hello this code is running in process B!
-x = 1
+x = x = 1
 x = 2
 init program is working, iteration 0
 init program is working, iteration 1
-init program is working, iteration x = 1
+init program is working, iteration 2
+init program is working, iteration 31
 x = 2
 process B is working, iteration 0
 process B is working, iteration 1
-process B is working, iteration 22
-init program is working, iteration 3
+process B is working, iteration 2
+process B is working, iteration 3
+process B is working, iteration 4
+process B is working, iteration 5
+process B is working, iteration 6
 init program is working, iteration 4
 init program is working, iteration 5
 init program is working, iteration 6
 init program is working, iteration 7
 init program is working, iteration 8
 init program is working, iteration 9
-
-process B is working, iteration 3
-process B is working, iteration 4
-process B is working, iteration 5
-process B is working, iteration 6
-process B is working, iteration 7
-process B is working, iteration 8
-process B is working, iteration init program is working, iteration 10
+init program is working, iteration 10
 init program is working, iteration 11
 init program is working, iteration 12
-init program is working, iteration 13
+init program is working, iteration 
+process B is working, iteration 7
+process B is working, iteration 8
+process B is working, iteration 9
+process B is working, iteration 10
+process B is working, iteration 11
+process B is working, iteration 12
+process B is working, iteration 13
+process B is working, iteration 14
+process B is working, iteration 15
+process B is working, iteration 13
 init program is working, iteration 14
 init program is working, iteration 15
 init program is working, iteration 16
 init program is working, iteration 17
 init program is working, iteration 18
-init program is working, iteration 9
-process B is working, iteration 10
-process B is working, iteration 11
-process B is working, iteration 12
-process B is working, iteration 13
-process B is working, iteration 19
+init program is working, iteration 19
 init program is working, iteration 20
 init program is working, iteration 21
 init program is working, iteration 22
 init program is working, iteration 23
-init program is working, iteration 24
-init program is working, iteration 25
-init program is working, iteration 26
-init program is working, iteration 27
-14
-process B is working, iteration 15
-process B is working, iteration 16
+16
 process B is working, iteration 17
 process B is working, iteration 18
 process B is working, iteration 19
@@ -65,19 +78,20 @@ process B is working, iteration 20
 process B is working, iteration 21
 process B is working, iteration 22
 process B is working, iteration 23
-process B is working, iteration init program is working, iteration 28
+process B is working, iteration 24
+process B is working, iteration 25
+process B is working, iteration 26
+process B is working, iteration init program is working, iteration 24
+init program is working, iteration 25
+init program is working, iteration 26
+init program is working, iteration 27
+init program is working, iteration 28
 init program is working, iteration 29
 init program is working, iteration 30
 init program is working, iteration 31
 init program is working, iteration 32
 init program is working, iteration 33
-init program is working, iteration 34
-init program is working, iteration 35
-init program is working, iteration 36
-24
-process B is working, iteration 25
-process B is working, iteration 26
-process B is working, iteration 27
+init program is working, iteration 27
 process B is working, iteration 28
 process B is working, iteration 29
 process B is working, iteration 30
@@ -86,7 +100,14 @@ process B is working, iteration 32
 process B is working, iteration 33
 process B is working, iteration 34
 process B is working, iteration 35
-process B is working, iteration init program is working, iteration 37
+process B is working, iteration 36
+process B is working, iteration 37
+process B is working, iteration 38
+process B is working, iteration 39
+34
+init program is working, iteration 35
+init program is working, iteration 36
+init program is working, iteration 37
 init program is working, iteration 38
 init program is working, iteration 39
 init program is working, iteration 40
@@ -95,16 +116,7 @@ init program is working, iteration 42
 init program is working, iteration 43
 init program is working, iteration 44
 init program is working, iteration 45
-init program is working, iteration 46
-init program is working, iteration 47
-init program is working, iteration 48
-init program is working, iteration 49
-init program is working, iteration 50
-init program is working, iteration 36
-process B is working, iteration 37
-process B is working, iteration 38
-process B is working, iteration 39
-process B is working, iteration 40
+init program is working, iteration process B is working, iteration 40
 process B is working, iteration 41
 process B is working, iteration 42
 process B is working, iteration 43
@@ -116,26 +128,20 @@ process B is working, iteration 48
 process B is working, iteration 49
 process B is working, iteration 50
 process B is working, iteration 51
-process B is working, iteration 52
-51
+process B is working, iteration 46
+init program is working, iteration 47
+init program is working, iteration 48
+init program is working, iteration 49
+init program is working, iteration 50
+init program is working, iteration 51
 init program is working, iteration 52
 init program is working, iteration 53
 init program is working, iteration 54
 init program is working, iteration 55
 init program is working, iteration 56
 init program is working, iteration 57
-init program is working, iteration 58
-init program is working, iteration 59
-init program is working, iteration 60
-init program is working, iteration 61
-init program is working, iteration 62
-init program is working, iteration 63
-init program is working, iteration 64
-init program is working, iteration 65
-init program is working, iteration 66
-init program is working, iteration 67
-init program is working, iteration 68
-init program is working, iteration process B is working, iteration 53
+init program is working, iteration 52
+process B is working, iteration 53
 process B is working, iteration 54
 process B is working, iteration 55
 process B is working, iteration 56
@@ -147,14 +153,31 @@ process B is working, iteration 61
 process B is working, iteration 62
 process B is working, iteration 63
 process B is working, iteration 64
-process B is working, iteration 65
+58
+init program is working, iteration 59
+init program is working, iteration 60
+init program is working, iteration 61
+init program is working, iteration 62
+init program is working, iteration 63
+init program is working, iteration 64
+init program is working, iteration 65
+init program is working, iteration 66
+init program is working, iteration 67
+init program is working, iteration 68
+init program is working, iteration 69
+init program is working, iteration process B is working, iteration 65
 process B is working, iteration 66
 process B is working, iteration 67
 process B is working, iteration 68
 process B is working, iteration 69
 process B is working, iteration 70
-process B is working, iteration 69
-init program is working, iteration 70
+process B is working, iteration 71
+process B is working, iteration 72
+process B is working, iteration 73
+process B is working, iteration 74
+process B is working, iteration 75
+process B is working, iteration 76
+process B is working, iteration 70
 init program is working, iteration 71
 init program is working, iteration 72
 init program is working, iteration 73
@@ -166,14 +189,7 @@ init program is working, iteration 78
 init program is working, iteration 79
 init program is working, iteration 80
 init program is working, iteration 81
-init program is working, iteration 82
-init program is working, iteration 71
-process B is working, iteration 72
-process B is working, iteration 73
-process B is working, iteration 74
-process B is working, iteration 75
-process B is working, iteration 76
-process B is working, iteration 77
+init program is working, iteration 77
 process B is working, iteration 78
 process B is working, iteration 79
 process B is working, iteration 80
@@ -186,7 +202,8 @@ process B is working, iteration 86
 process B is working, iteration 87
 process B is working, iteration 88
 process B is working, iteration 89
-83
+82
+init program is working, iteration 83
 init program is working, iteration 84
 init program is working, iteration 85
 init program is working, iteration 86
@@ -197,13 +214,7 @@ init program is working, iteration 90
 init program is working, iteration 91
 init program is working, iteration 92
 init program is working, iteration 93
-init program is working, iteration 94
-init program is working, iteration 95
-init program is working, iteration 96
-init program is working, iteration 97
-init program is working, iteration 98
-init program is working, iteration 99
-process B is working, iteration 90
+init program is working, iteration process B is working, iteration 90
 process B is working, iteration 91
 process B is working, iteration 92
 process B is working, iteration 93
@@ -214,6 +225,12 @@ process B is working, iteration 97
 process B is working, iteration 98
 process B is working, iteration 99
 process B is done working, it will now exit.
+94
+init program is working, iteration 95
+init program is working, iteration 96
+init program is working, iteration 97
+init program is working, iteration 98
+init program is working, iteration 99
 init program is done working, it will now exit.
 All processes have completed/terminated.
 There is nothing left to do. You may power off your device now.

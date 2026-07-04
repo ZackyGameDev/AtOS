@@ -3,6 +3,7 @@ use crate::{print, dprintln};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::processes::ProcessState;
 use crate::kernel::scheduler::Scheduler;
+use crate::kernel::paging::PageAllocator;
 
 pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
     let syscall_number: u16 = (ctx.esr & 0xffff) as u16;
@@ -58,7 +59,8 @@ fn sys_exit(ctx: &mut ExceptionContext) -> core::fmt::Result {
 
     unsafe {
         if let Some(current_process) = &mut crate::kernel::processes::PROCESS_TABLE[Scheduler::get_current_process_index()] {
-            current_process.set_state(ProcessState::Terminated);
+            current_process.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
+            PageAllocator::free_page_table(Some(current_process.pctx.ttbr0));
             dprintln!("[SYS_EXIT] Process pid {}, name \"{:?}\" terminated.", current_process.pid, current_process.name);
         }
     }

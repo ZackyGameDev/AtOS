@@ -85,6 +85,12 @@ b   el1032_serror
 
     mrs     x0, FAR_EL1
     str     x0, [sp, #0x118]
+
+    mrs     x0, SP_EL0
+    str     x0, [sp, #0x120]
+
+    mrs     x0, TTBR0_EL1
+    str     x0, [sp, #0x128]
 .endm
 
 .macro LOAD_REG
@@ -94,6 +100,12 @@ b   el1032_serror
 
     ldr     x1, [sp, #0x108]
     msr     SPSR_EL1, x1
+
+    ldr     x1, [sp, #0x120]
+    msr     SP_EL0, x1
+
+    ldr     x1, [sp, #0x128]
+    msr     TTBR0_EL1, x1
     // we do not need to load back the other two registers
 
     ldp     x0,  x1,  [sp, #0x08]
@@ -123,8 +135,15 @@ b   el1032_serror
     mov     x0, sp
 .endm
 
+.macro RESET_TLB_CACHE
+    dsb     ish
+    tlbi    vmalle1
+    dsb     ish
+    isb
+.endm 
+
 .macro HANDLE_EXCEPTION type source
-    sub     sp, sp, #0x120 // allocating space for etype + esource + gprs + 4 u64 reg
+    sub     sp, sp, #0x130 // allocating space for etype + esource + gprs + 6 u64 reg
     // make sure sp is aigned to 16 bytes for rust handler according to arm standard
 
     // save registers
@@ -137,7 +156,10 @@ b   el1032_serror
     // load back the registers
     LOAD_REG
 
-    add     sp, sp, #0x120 // restore sp
+    // the translation table may have changed
+    RESET_TLB_CACHE
+
+    add     sp, sp, #0x130 // restore sp
 
     eret // handling completed :)
 .endm

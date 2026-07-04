@@ -53,7 +53,7 @@ impl Elf64Hdr {
             return None;
         }
 
-        // This read_aligned was the real pain in the ass!  Before that, I did
+        // This read_aligned was the real pain!  Before that, I did
         // &*(bytes.as_ptr() as *const Self), simple 'nuff right?  Wrong!
         // Because it is Rust and the language likes to have its own quirks.
         unsafe {

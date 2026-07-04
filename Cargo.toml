@@ -1,8 +1,12 @@
 [package]
-name = "at-os"
-version = "0.1.0"
+name = "AtOS"
+version = "0.1.0-dev"
 edition = "2024"
 authors = ["ZackyGameDev <zaacky2456@gmail.com>"]
+description = "A simple OS for the RPi3b+ board, written in Rust."
+repository = "https://github.com/ZackyGameDev/AtOS"
+homepage = "https://zackygamedev.github.io/RustOSGuideforRPi3/"
+license = "Apache 2.0"
 
 [dependencies]
 

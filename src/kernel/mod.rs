@@ -9,4 +9,5 @@ pub mod processes;
 pub mod scheduler;
 pub mod input;
 pub mod spinlock;
+pub mod paging;
 pub mod elf;

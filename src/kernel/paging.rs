@@ -288,8 +288,8 @@ impl PageAllocator {
             let l3 = ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
             let l3_entry = (*l3).entry[l3_i];
             if l3_entry & 0b11 != 0b11 { 
-                Self::get_free_frame_pa().map(|new_l4_pa| {
-                    (*l3).entry[l3_i] = new_l4_pa as u64 | VALID | PAGE | AP_EL0_RW | SH_INNER | AF | PXN | NG; // valid, table
+                Self::get_free_frame_pa().map(|frame| {
+                    (*l3).entry[l3_i] = frame as u64 | VALID | PAGE | AP_EL0_RW | SH_INNER | AF | PXN | NG; // valid, table
                 }).expect("No free frames available for new page table entry");
             } else {
                 panic!("Page already allocated at va: {:#x}", va);

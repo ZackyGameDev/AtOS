@@ -135,6 +135,13 @@ b   el1032_serror
     mov     x0, sp
 .endm
 
+.macro RESET_TLB_CACHE
+    dsb     ish
+    tlbi    vmalle1
+    dsb     ish
+    isb
+.endm 
+
 .macro HANDLE_EXCEPTION type source
     sub     sp, sp, #0x130 // allocating space for etype + esource + gprs + 6 u64 reg
     // make sure sp is aigned to 16 bytes for rust handler according to arm standard
@@ -148,6 +155,9 @@ b   el1032_serror
 
     // load back the registers
     LOAD_REG
+
+    // the translation table may have changed
+    RESET_TLB_CACHE
 
     add     sp, sp, #0x130 // restore sp
 

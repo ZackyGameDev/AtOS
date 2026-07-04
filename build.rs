@@ -32,16 +32,14 @@ fn main() {
     .trim()
     .to_owned();
 
-    let git_hash = String::from_utf8(
-        Command::new("git")
-            .args(["rev-parse", "--short", "HEAD"])
-            .output()
-            .expect("failed to execute git")
-            .stdout,
-    )
-    .unwrap()
-    .trim()
-    .to_owned();
+    let git_hash = Command::new("git")
+        .args(["rev-parse", "--short", "HEAD"])
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_owned())
+        .filter(|s| !s.is_empty())
+        .unwrap_or_else(|| "unknown".to_owned());
 
     println!("cargo:rustc-env=BUILD_TIME={build_time}");
     println!("cargo:rustc-env=RUSTC_VERSION={rust_version}");

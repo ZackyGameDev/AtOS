@@ -275,6 +275,7 @@ impl PageAllocator {
             if (*l1).entry[l1_i] & 0b11 != 0b11 {  // if invalid, i.e. lower level table doesn't exist 
                 Self::get_free_frame_pa().map(|new_l2_pa| {
                     (*l1).entry[l1_i] = new_l2_pa as u64 | 0b11; // valid, table
+                    (*(ttbr1_to_va!(new_l2_pa) as *mut PageTable)).entry.fill(0); // zero out the new table
                 }).expect("No free frames available for new L2 page table");
             } 
 
@@ -282,6 +283,7 @@ impl PageAllocator {
             if (*l2).entry[l2_i] & 0b11 != 0b11 {  // if invalid, i.e. lower level table doesn't exist 
                 Self::get_free_frame_pa().map(|new_l3_pa| {
                     (*l2).entry[l2_i] = new_l3_pa as u64 | 0b11; // valid, table
+                    (*(ttbr1_to_va!(new_l3_pa) as *mut PageTable)).entry.fill(0); // zero out the new table
                 }).expect("No free frames available for new L3 page table");
             } 
 

@@ -2,8 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-    /* once memory virtualization works, i will change this to start at 0x00000000 */
-    . = 0x200000;
+    . = 0x000000;
 
     .text : {
         *(.text*)
@@ -22,5 +21,5 @@ SECTIONS
     }
     
     . = ALIGN(16);
-    _user_stack_top = . + 0x4000;
+    _user_stack_top = . + 0x4000; /* unused */
 }

@@ -29,7 +29,7 @@ _start:
     ldr     x0, =PAGE_TABLE_KERNEL_L1
     and     x0, x0, x7          // to physical address
     str     x1, [x0]
-    str     x1, [x0, #8]
+    str     x2, [x0, #8]
     dsb     ishst
 
     // now loading the page tables

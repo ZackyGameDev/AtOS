@@ -35,6 +35,8 @@ pub struct ExceptionContext {
     pub spsr: u64,
     pub esr: u64,
     pub far: u64,
+    pub sp_el0: u64,
+    pub ttbr0: u64,  
 }
 
 impl ExceptionContext {
@@ -42,6 +44,8 @@ impl ExceptionContext {
         self.x.copy_from_slice(&pctx.x);
         self.elr = pctx.elr;
         self.spsr = pctx.spsr;
+        self.sp_el0 = pctx.sp;
+        self.ttbr0 = pctx.ttbr0;
     }
 }
 
@@ -64,7 +68,11 @@ fn print_exception_context(ctx: &ExceptionContext) -> () {
     println!("ELR  : {:#018x}", ctx.elr).unwrap();
     println!("SPSR : {:#018x}", ctx.spsr).unwrap();
     println!("ESR  : {:#018x}", ctx.esr).unwrap();
+    println!("FAR  : {:#018x}", ctx.far).unwrap();;
+    println!("ESR  : {:#018x}", ctx.esr).unwrap();
     println!("FAR  : {:#018x}", ctx.far).unwrap();
+    println!("SP_EL0 : {:#018x}", ctx.sp_el0).unwrap();
+    println!("TTBR0  : {:#018x}", ctx.ttbr0).unwrap();
     println!("Registers:").unwrap();
     for i in 0..31 {
         println!("  x{:02} = {:#018x}", i, ctx.x[i]).unwrap();
@@ -132,16 +140,7 @@ pub extern "C" fn handle_exception_el1(ctx: &mut ExceptionContext) {
 
     // if it came from EL0, then we need to update PCB of the process interrupted.
     if was_from_user_el0(ctx) {
-        let sp_el0: u64;
-        unsafe {
-            // reading sp_el0
-            core::arch::asm!(
-                "mrs {val}, sp_el0",
-                val = out(reg) sp_el0,
-                options(nostack, preserves_flags)
-            )
-        }
-        let new_pctx = ProcessContext::from_ectx(ctx, sp_el0);
+        let new_pctx = ProcessContext::from_ectx(ctx0);
 
         Scheduler::update_last_running_pctx(&new_pctx);
     }

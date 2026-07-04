@@ -20,19 +20,3 @@ macro_rules! dprintln {
         }
     };
 }
-
-#[macro_export]
-macro_rules! ttbr1_to_va {
-    ($addr:expr) => {
-        // Casts to usize and applies bitwise OR to set the higher-half prefix
-        (($addr) as usize) | 0xffffff8000000000usize
-    };
-}
-
-#[macro_export]
-macro_rules! ttbr1_to_pa {
-    ($addr:expr) => {
-        // Casts to usize and masks out everything except the lower 39 bits
-        (($addr) as usize) & 0x0000007FFFFFFFFFusize
-    };
-}

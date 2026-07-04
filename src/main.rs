@@ -7,7 +7,7 @@ use kernel::utils::get_current_el;
 use kernel::peripherals::Uart;
 use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
-use kernel::processes::{load_elf_process, load_process, Process, ProcessState};
+use kernel::processes::{/*load_elf_process, load_process,*/ Process, ProcessState};
 use kernel::spinlock::Spinlock;
 use kernel::mutex::Mutex;
 use kernel::paging::PageAllocator;

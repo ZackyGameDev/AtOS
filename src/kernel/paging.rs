@@ -1,5 +1,9 @@
 #![allow(static_mut_refs)]
 
+use crate::{ttbr1_to_pa, ttbr1_to_va, dprintln};
+use crate::kernel::elf::{Elf64Hdr, Elf64ProgHdr, PT_LOAD};
+use crate::kernel::processes::{Process, add_process_to_ptable};
+
 // TCR_EL1 register values for 4KB granule, 36-bit physical address space, inner shareable, write-back write-allocate cacheable memory
 #[used]
 #[unsafe(no_mangle)]
@@ -76,17 +80,251 @@ pub struct PageAllocator;
 
 impl PageAllocator {
 
-    pub fn add_free_frame(addr_in_frame: usize) -> () {
-        let free_frame_addr = addr_in_frame & !(PAGE_SIZE - 1);
-        let free_frame = free_frame_addr as *mut FreeFrame;
+    // this was originally written in kernel::processes:load_elf_process
+    // however that function is now deprecated because it was written before 
+    // paging or virtualization was implemented. i have moved it here and modified it to use
+    // the page allocator to load process in virtual memory and handle the translation table
+    pub fn load_elf_process(process_name: &str, parent_pid: u64, bytes: &'static [u8]) {
+        let header = match Elf64Hdr::mkfrombytes(bytes) {
+            Some(h) => h,
+            None => {
+                dprintln!("load_elf_process: invalid elf file header '{}'",
+                        process_name);
+                return;
+            }
+        };
+
+        // yummy page table 
+        let ttbr0: u64 = Self::get_free_frame_pa().expect("No free frames available for new process") as u64;
+
+        let mut loaded_any_segments = false;
+        let mut max_allocated_addr = 0u64;
+
+        let ph_size = core::mem::size_of::<Elf64ProgHdr>();
+        let start = header.phoff as usize;
+        let count = header.phnum as usize;
+
+        for i in 0..count {
+            let offset = start + (i * ph_size);
+            if offset + ph_size > bytes.len() {
+                break;
+            }
+
+            let ph = unsafe {
+                core::ptr::read_unaligned(bytes.as_ptr().add(offset) as *const Elf64ProgHdr)
+            };
+
+            if ph.r#type == PT_LOAD {
+
+                let va_start = ph.virtaddr as usize;
+                let va_end = va_start + ph.memsize as usize;
+                let file_end = va_start + ph.filesize as usize;
+
+                let mut current_page_va = va_start & !0xFFF;
+
+                let mut file_offset = ph.offset as usize;
+
+                while current_page_va < va_end {
+
+                    let frame_va = ttbr1_to_va!(
+                        Self::alloc_page(current_page_va, Some(ttbr0))
+                    ) as *mut u8;
+                    
+                    let va_offset_in_page = if current_page_va < va_start {
+                        va_start - current_page_va
+                    } else {
+                        0
+                    };
+
+                    let page_remaining_space = 4096 - va_offset_in_page;
+
+                    let current_va_pos = current_page_va + va_offset_in_page;
+                    
+                    let bytes_to_copy = if current_va_pos < file_end {
+                        let remaining_file_bytes = file_end - current_va_pos;
+                        core::cmp::min(page_remaining_space, remaining_file_bytes)
+                    } else {
+                        0
+                    };
+
+                    if bytes_to_copy > 0 {
+                        unsafe {
+                            let src = bytes.as_ptr().add(file_offset);
+                            let dst = frame_va.add(va_offset_in_page);
+                            core::ptr::copy_nonoverlapping(src, dst, bytes_to_copy);
+                        }
+                        file_offset += bytes_to_copy;
+                    }
+
+                    // zeroing .bss
+                    let current_va_after_copy = current_va_pos + bytes_to_copy;
+                    
+                    if current_va_after_copy < va_end {
+                        let bss_offset_in_page = va_offset_in_page + bytes_to_copy;
+                        let bytes_to_zero = core::cmp::min(
+                            4096 - bss_offset_in_page,
+                            va_end - current_va_after_copy
+                        );
+
+                        if bytes_to_zero > 0 {
+                            unsafe {
+                                let dst = frame_va.add(bss_offset_in_page);
+                                core::ptr::write_bytes(dst, 0, bytes_to_zero);
+                            }
+                        }
+                    }
+
+                    // Move to the next 4KB page frame
+                    current_page_va += 4096;
+
+                }
+
+                if va_end as u64 > max_allocated_addr {
+                    max_allocated_addr = va_end as u64;
+                }
+                loaded_any_segments = true;
+            }
+        }
+        
+        if !loaded_any_segments {
+            dprintln!("load_elf_process: no loadable segment found in '{}'", process_name);
+            return;
+        }
+
+        let entry_point = header.entry;
+        // set stack top to just above the highest allocated program segment 16-byte aligned
+        let stack_top: u64 = (max_allocated_addr + 0x4000) & !0xf;
+
+        Self::alloc_page(stack_top as usize, Some(ttbr0));
+
+        let process: Process = Process::new(process_name, parent_pid, entry_point, stack_top, ttbr0);
+        if let Err(e) = add_process_to_ptable(process) {
+            dprintln!("{}", e);
+            panic!("load_elf_process: {}", e);
+        }
+    }
+
+    
+    // gets the physical address of a virtual address according to given/loaded ttbr0 table
+    // since ttbr0 is not identity mapped (unlike ttbr1), we have to traverse the table levels to 
+    // get the physical adddress
+    pub fn ttbr0_to_pa(va: usize, ttbr0_val: Option<u64>) -> Option<u64> {
+        let translation_table_pa = match ttbr0_val {
+            Some(pa) => pa,
+            None => {
+                let mut ttbr0: u64;
+                unsafe { core::arch::asm!("mrs {}, ttbr0_el1", out(reg) ttbr0) };
+                ttbr0 & 0x0000_FFFF_FFFF_F000
+            }
+        };
+
+        let l1_i = (va >> 30) & 0x1FF;
+        let l2_i = (va >> 21) & 0x1FF;
+        let l3_i = (va >> 12) & 0x1FF;
+        let offset = va & 0xFFF;
+
+        // trailing to the l3 entry with checks
+        unsafe {
+            let l1 = ttbr1_to_va!(translation_table_pa) as *const PageTable;
+            if (*l1).entry[l1_i] & 0b11 != 0b11 { return None; /* invalid entry/unhandled block situation */ } 
+            let l2 = ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000) as *const PageTable;
+            if (*l2).entry[l2_i] & 0b11 != 0b11 { return None; /* invalid entry/unhandled block situation */ }
+            let l3 = ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000) as *const PageTable;
+            let l3_entry = (*l3).entry[l3_i];
+            if l3_entry & 0b11 != 0b11 { return None; /* invalid entry */ }
+            Some((l3_entry & 0x0000_FFFF_FFFF_F000) + offset as u64)
+        }  
+    } 
+
+
+    // basically takes in a virtual address (from ttbr0 va range) and allocates a page for 
+    // it in the given/loaded ttbr0 translation table. if the page is already allocated, it panics.
+    // returns the physical address of the frame in which the page is allocated.
+    fn alloc_page(va: usize, ttbr0_val: Option<u64>) -> u64 {
+        let translation_table_pa = match ttbr0_val {
+            Some(pa) => pa,
+            None => {
+                let mut ttbr0: u64;
+                unsafe { core::arch::asm!("mrs {}, ttbr0_el1", out(reg) ttbr0) };
+                ttbr0 & 0x0000_FFFF_FFFF_F000
+            }
+        };
+
+        if let Some(_) = Self::ttbr0_to_pa(va, ttbr0_val) {
+            panic!("Page already allocated at va: {:#x}", va);
+        } 
+
+        let l1_i = (va >> 30) & 0x1FF;
+        let l2_i = (va >> 21) & 0x1FF;
+        let l3_i = (va >> 12) & 0x1FF;
+
+        const VALID: u64 = 1 << 0;
+        const PAGE: u64 = 1 << 1;
+        // 0b00 = EL1 RW, EL0 No Access 
+        // 0b01 = EL1 RW, EL0 RW        
+        const AP_EL0_RW: u64 = 0b01 << 6; 
+        const SH_INNER: u64 = 0b10 << 8;
+        const AF: u64 = 1 << 10;
+        const PXN: u64 = 1 << 53; // don't try to run user space code in el1!!
+        // const UXN: u64 = 1 << 54;
+        const NG: u64 = 1 << 11;
+
+        // trailing to the l3 entry with checks, but if any entry is invalid, we allocate a new page table for it and continue
+        unsafe {
+            let l1 = ttbr1_to_va!(translation_table_pa) as *mut PageTable;
+            if (*l1).entry[l1_i] & 0b11 != 0b11 {  // if invalid, i.e. lower level table doesn't exist 
+                Self::get_free_frame_pa().map(|new_l2_pa| {
+                    (*l1).entry[l1_i] = new_l2_pa as u64 | 0b11; // valid, table
+                }).expect("No free frames available for new L2 page table");
+            } 
+
+            let l2 = ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
+            if (*l2).entry[l2_i] & 0b11 != 0b11 {  // if invalid, i.e. lower level table doesn't exist 
+                Self::get_free_frame_pa().map(|new_l3_pa| {
+                    (*l2).entry[l2_i] = new_l3_pa as u64 | 0b11; // valid, table
+                }).expect("No free frames available for new L3 page table");
+            } 
+
+            let l3 = ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
+            let l3_entry = (*l3).entry[l3_i];
+            if l3_entry & 0b11 != 0b11 { 
+                Self::get_free_frame_pa().map(|new_l4_pa| {
+                    (*l3).entry[l3_i] = new_l4_pa as u64 | VALID | PAGE | AP_EL0_RW | SH_INNER | AF | PXN | NG; // valid, table
+                }).expect("No free frames available for new page table entry");
+            } else {
+                panic!("Page already allocated at va: {:#x}", va);
+            }
+
+            (*l3).entry[l3_i] & 0x0000_FFFF_FFFF_F000
+        }
+
+    }
+    
+    // this function most certainly pops a free frame from the free list in fact. 
+    // make sure any frame you ask you eventually return to the free list i suppose! 
+    fn get_free_frame_pa() -> Option<usize> {
+        unsafe {
+            if let Some(free_frame) = FREE_FRAME_LIST {
+                let free_frame_va = free_frame as usize;
+                FREE_FRAME_LIST = (*free_frame).next;
+                Some(ttbr1_to_pa!(free_frame_va))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub fn add_free_frame(va_in_frame: usize) -> () {
+        let free_frame_va = va_in_frame & !(PAGE_SIZE - 1);
+        let free_frame = free_frame_va as *mut FreeFrame;
         unsafe { (*free_frame).next = FREE_FRAME_LIST;
                  FREE_FRAME_LIST = Some(free_frame) };
     }
 
     // run at boot. marks all frames as free and adds them to the free frame list
-    pub fn init_frames(first_free_frame_addr: usize, last_frame_addr_limit: usize) -> () {
-        for frame_addr in (first_free_frame_addr..last_frame_addr_limit).step_by(PAGE_SIZE) {
-            PageAllocator::add_free_frame(frame_addr);
+    pub fn init_frames(first_free_frame_va: usize, last_frame_va_limit: usize) -> () {
+        for frame_va in (first_free_frame_va..last_frame_va_limit).step_by(PAGE_SIZE) {
+            PageAllocator::add_free_frame(frame_va);
         }
     }
 }
@@ -209,3 +447,20 @@ pub static mut PAGE_TABLE_KERNEL_L1: PageTable = PageTable {
 // so we can't expect to setup the page table here in rust after jumping to it.
 // this is also why we strictly use statics and const the entire time
 // because they are setup at commpile time.
+
+// now finally some macros to assist with the kernel va and pa conversions
+#[macro_export]
+macro_rules! ttbr1_to_va {
+    ($addr:expr) => {
+        // Casts to usize and applies bitwise OR to set the higher-half prefix
+        (($addr) as usize) | 0xffffff8000000000usize
+    };
+}
+
+#[macro_export]
+macro_rules! ttbr1_to_pa {
+    ($addr:expr) => {
+        // Casts to usize and masks out everything except the lower 39 bits
+        (($addr) as usize) & 0x0000007FFFFFFFFFusize
+    };
+}

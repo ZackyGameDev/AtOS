@@ -62,27 +62,27 @@ fn print_exception_context(ctx: &ExceptionContext) -> () {
         ExceptionSource::_EL064 => "EL064",
         ExceptionSource::_EL032 => "EL032",
     };
-    println!("=== Exception Context ===").unwrap();
-    println!("Type : {} ({})", etype_str, ctx.etype as u8).unwrap();
-    println!("Source : {} ({})", esource_str, ctx.esource as u8).unwrap();
-    println!("ELR  : {:#018x}", ctx.elr).unwrap();
-    println!("SPSR : {:#018x}", ctx.spsr).unwrap();
-    println!("ESR  : {:#018x}", ctx.esr).unwrap();
-    println!("FAR  : {:#018x}", ctx.far).unwrap();
-    println!("ESR  : {:#018x}", ctx.esr).unwrap();
-    println!("FAR  : {:#018x}", ctx.far).unwrap();
-    println!("SP_EL0 : {:#018x}", ctx.sp_el0).unwrap();
-    println!("TTBR0  : {:#018x}", ctx.ttbr0).unwrap();
-    println!("Registers:").unwrap();
+    println!("=== Exception Context ===");
+    println!("Type : {} ({})", etype_str, ctx.etype as u8);
+    println!("Source : {} ({})", esource_str, ctx.esource as u8);
+    println!("ELR  : {:#018x}", ctx.elr);
+    println!("SPSR : {:#018x}", ctx.spsr);
+    println!("ESR  : {:#018x}", ctx.esr);
+    println!("FAR  : {:#018x}", ctx.far);
+    println!("ESR  : {:#018x}", ctx.esr);
+    println!("FAR  : {:#018x}", ctx.far);
+    println!("SP_EL0 : {:#018x}", ctx.sp_el0);
+    println!("TTBR0  : {:#018x}", ctx.ttbr0);
+    println!("Registers:");
     for i in 0..31 {
-        println!("  x{:02} = {:#018x}", i, ctx.x[i]).unwrap();
+        println!("  x{:02} = {:#018x}", i, ctx.x[i]);
     }
-    println!("=========================").unwrap();
+    println!("=========================");
 }
 
 macro_rules! unhandled_exception {
     ($ctx:expr) => {{
-        println!("Unhandled exception detected!").unwrap();
+        println!("Unhandled exception detected!");
         print_exception_context($ctx);
     }};
 }
@@ -111,7 +111,7 @@ fn handle_sync_exception(ctx: &mut ExceptionContext) -> () {
                     syscalls::handle_syscall(ctx);
                 },
                 0x07 => {
-                    println!("EXCEPTION: FP/SIMD functionality used when not enabled!").unwrap();
+                    println!("EXCEPTION: FP/SIMD functionality used when not enabled!");
                 },
                 _ => unhandled_exception!(ctx),
             }
@@ -129,7 +129,7 @@ fn handle_irq_exception(ctx: &mut ExceptionContext) -> () {
     }
 
     if irq_sources > 0 {
-        println!("Other Unhandled IRQ sources pending: {:#x}", irq_sources).unwrap();
+        println!("Other Unhandled IRQ sources pending: {:#x}", irq_sources);
         unhandled_exception!(ctx);
     }
 }

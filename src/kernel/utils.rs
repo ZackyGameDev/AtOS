@@ -11,12 +11,3 @@ pub fn get_current_el() -> u64 {
     }
     el
 }
-
-#[macro_export]
-macro_rules! dprintln {
-    ($($arg:tt)*) => {
-        if crate::DEBUG_PRINTS_ENABLED {
-            crate::println!($($arg)*).unwrap();
-        }
-    };
-}

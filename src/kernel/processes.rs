@@ -1,9 +1,6 @@
 #![allow(static_mut_refs)]
 
 use crate::kernel::exceptions::ExceptionContext;
-use crate::dprintln;
-
-use crate::kernel::elf::{Elf64Hdr, Elf64ProgHdr, PT_LOAD};
 
 pub const MAX_PROCESSES: usize = 50;
 pub const MAX_CPUS: usize = 1; // for now

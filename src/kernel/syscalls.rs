@@ -1,9 +1,9 @@
-use crate::kernel::input;
 use crate::{print, dprintln};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::processes::ProcessState;
 use crate::kernel::scheduler::Scheduler;
 use crate::kernel::paging::PageAllocator;
+use crate::kernel::io::KERNEL_IO;
 
 pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
     let syscall_number: u16 = (ctx.esr & 0xffff) as u16;
@@ -13,7 +13,7 @@ pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
         2 => sys_read(ctx).unwrap(),
         3 => sys_exit(ctx).unwrap(),
         _ => {
-            print!("Unknown syscall: {}", syscall_number).unwrap();
+            print!("Unknown syscall: {}", syscall_number);
         }
     }
 }
@@ -26,7 +26,7 @@ fn sys_print(ctx: &ExceptionContext) -> core::fmt::Result {
     let s = unsafe { core::slice::from_raw_parts(ptr, len) };
     let s = core::str::from_utf8(s).unwrap_or("");
 
-    print!("{}", s).unwrap();
+    print!("{}", s);
     Ok(())
 }
 
@@ -45,7 +45,7 @@ pub fn sys_read(ctx: &mut ExceptionContext) -> core::fmt::Result {
         core::slice::from_raw_parts_mut(usr_bufp, buf_sz)
     };
 
-    let r = input::getline(buf);
+    let r = KERNEL_IO.read(buf);
     ctx.x[0] = r as u64;
 
     Ok(())

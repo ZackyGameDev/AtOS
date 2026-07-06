@@ -1,7 +1,6 @@
 #![allow(unused_assignments)]
 
 use crate::kernel::filesystem::FileSystem;
-use crate::kernel::paging::PageAllocator;
 use crate::kernel::processes::add_process_to_ptable;
 use crate::{print, dprintln};
 use crate::kernel::exceptions::ExceptionContext;
@@ -121,7 +120,11 @@ fn sys_exec(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
     dprintln!("[SYS_EXEC] Attempting to execute file: {}", path_str);
 
     if let Some(current_process) = Scheduler::get_current_process() {
-        PageAllocator::free_page_table(Some(current_process.pctx.ttbr0));
+
+        let mut name_bytes = [0u8; 32];
+        let bytes = path_str.as_bytes();
+        let len = core::cmp::min(bytes.len(), 32);
+        name_bytes[..len].copy_from_slice(&bytes[..len]);
 
         let elf_bytes = match FileSystem::read_file(path_str) {
             Some(bytes) => bytes,
@@ -133,10 +136,11 @@ fn sys_exec(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
         };
 
         current_process.exec(elf_bytes)?;
-       
-        let bytes = path_str.as_bytes();
-        let len = core::cmp::min(bytes.len(), 32);
-        current_process.name[..len].copy_from_slice(&bytes[..len]);
+        current_process.name[..len].copy_from_slice(&name_bytes[..len]);
+        
+        ctx.update_from_pctx(&current_process.pctx);
+    
+        dprintln!("[SYS_EXEC] Process executed new file: {:?}", current_process);
 
     } else {
         dprintln!("[SYS_EXEC] Current process not found. (???)");

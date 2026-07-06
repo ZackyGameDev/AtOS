@@ -2,7 +2,7 @@
 
 use core::default;
 
-use crate::dprintln;
+use crate::{dprintln, print};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::paging::PageAllocator;
 

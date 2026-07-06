@@ -89,3 +89,19 @@ pub fn exit(exit_code: i32) -> ! {
         );
     }
 }
+
+
+// fork is assigned syscall number 4 (svc #4)
+pub fn fork() -> i64 {
+    let mut r: u64;
+
+    unsafe {
+        core::arch::asm!(
+            "svc #4",
+            out("x0") r,
+            clobber_abi("C")
+        );
+    }
+
+    r as i64
+}

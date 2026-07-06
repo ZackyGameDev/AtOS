@@ -12,3 +12,4 @@ pub mod paging;
 pub mod elf;
 pub mod io;
 pub mod arch;
+pub mod filesystem;

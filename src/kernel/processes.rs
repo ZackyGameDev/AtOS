@@ -1,6 +1,7 @@
-#![allow(static_mut_refs)]
+#![allow(static_mut_refs, unused)]
 
 use crate::kernel::exceptions::ExceptionContext;
+use crate::kernel::paging::PageAllocator;
 
 pub const MAX_PROCESSES: usize = 50;
 pub const MAX_CPUS: usize = 1; // for now
@@ -126,6 +127,34 @@ impl Process {
                chan: 0, }
     }
 
+    pub fn fork(&self) -> Result<Process, &'static str> {
+        let new_ttbr0 = PageAllocator::duplicate_va_space(Some(self.pctx.ttbr0))?;
+
+        let new_pid = unsafe {
+            let pid = NEXT_PID;
+            NEXT_PID += 1;
+            pid
+        };
+
+        let mut new_pctx = self.pctx;
+        new_pctx.ttbr0 = new_ttbr0;
+        
+        // this function does NOT set the return value in x0 for child process or parent process.
+        // that part is supposed to be done by the syscall implementation. as the decision for what
+        // to return in which register is made there, not here.
+        Ok(Self { pid: new_pid,
+                  name: self.name,
+                  state: self.state,
+                  parent_pid: self.pid,
+                  pctx: new_pctx,
+                  chan: 0, } )
+    }
+    
+    pub fn terminate(&mut self) {
+        self.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
+        PageAllocator::free_page_table(Some(self.pctx.ttbr0));
+    }
+
     pub fn set_state(&mut self, new_state: ProcessState) {
         self.state = new_state;
     }
@@ -148,6 +177,15 @@ impl Process {
             }
         }
         None
+    }
+
+    pub fn find_by_ptable_index(index: usize) -> Option<&'static mut Process> {
+        if index >= MAX_PROCESSES {
+            return None;
+        }
+        unsafe {
+            PROCESS_TABLE[index].as_mut()
+        }
     }
 
     pub fn find_by_id(pid: u64) -> Option<&'static mut Process> {

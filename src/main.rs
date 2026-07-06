@@ -9,9 +9,10 @@ use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
 use kernel::paging::PageAllocator;
 use kernel::scheduler::Scheduler;
+use kernel::filesystem::FileSystem;
 
 // pub const DEBUG_PRINTS_ENABLED: bool = true;
-pub const DEBUG_PRINTS_ENABLED: bool = false;
+pub const DEBUG_PRINTS_ENABLED: bool = true;
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {
@@ -46,16 +47,16 @@ pub extern "C" fn _rust_main() -> ! {
 
     println!("Physical Timer frequency: {} Hz", frq);
 
-    let process_a_elf: &'static [u8] = include_bytes!("user/build/init");
-    let process_b_elf: &'static [u8] = include_bytes!("user/build/b");
+    // let process_a_elf: &'static [u8] = include_bytes!("user/build/init");
+    // let process_b_elf: &'static [u8] = include_bytes!("user/build/b");
 
-    PageAllocator::load_elf_process("init", 0, process_a_elf);
-    PageAllocator::load_elf_process("process b", 0, process_b_elf);
+    // FileSystem::run_executable("init").unwrap();
+    FileSystem::run_executable("b").unwrap();
 
     println!("Starting the scheduler!");
     Scheduler::start();
 
-    the_end()
+    the_end() // this should never be reached, but still keeping it here if preceeding code is changed during testings
 }
 
 // usually, an os has a root user process which spawns all the other user processes.

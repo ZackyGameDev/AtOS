@@ -27,6 +27,10 @@ impl Scheduler {
         unsafe { CURRENT_PROCESS }
     }
 
+    pub fn get_current_process() -> Option<&'static mut Process> {
+        Process::find_by_ptable_index(Self::get_current_process_index())
+    }
+
     pub fn schedule_next(ectx: &mut ExceptionContext) {
         dprintln!("[SCHEDULER] Scheduling next process...");
         if let Some(next_process) = Self::choose_next_process() {

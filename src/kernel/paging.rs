@@ -107,6 +107,7 @@ pub struct FreeFrame {
 pub static mut FREE_FRAME_LIST: Option<*mut FreeFrame> = None;
 pub struct PageAllocator;
 
+// \TODO add a method to keep track of how many frames are used/available
 impl PageAllocator {
 
     // this was originally written in kernel::processes:load_elf_process
@@ -265,6 +266,90 @@ impl PageAllocator {
         }  
     } 
 
+    // this is for fork syscall. duplicates the entire virtual address space of a process
+    // and creates an appropriate translation table for the new virtual address space.
+    // a deep copy is created. with new frames being allocated for the new va space.
+    // but having the same data as the corresponding previous va space frames.
+    pub fn duplicate_va_space(ttbr0_val: Option<u64>) -> Result<u64, &'static str> {
+        let src_translation_table_pa = match ttbr0_val {
+            Some(pa) => pa,
+            None => {
+                let mut ttbr0: u64;
+                unsafe { core::arch::asm!("mrs {}, ttbr0_el1", out(reg) ttbr0) };
+                ttbr0 & 0x0000_FFFF_FFFF_F000
+            }
+        };
+
+        let dst_translation_table_pa = match Self::get_free_frame_pa() {
+            Some(pa) => pa as u64,
+            None => return Err("No more memory to allocate new translation table for child process"),
+        };
+
+        unsafe {
+            let dst_l1 = ttbr1_to_va!(dst_translation_table_pa) as *mut PageTable;
+            (*dst_l1).entry.fill(0);
+        }
+
+        if let Err(e) = Self::do_duplicate_table_recursive(src_translation_table_pa, dst_translation_table_pa, 1) {
+            // Rollback: If we ran out of memory halfway through, free everything we've allocated so far
+            Self::free_page_table(Some(dst_translation_table_pa));
+            return Err(e);
+        }
+
+        Ok(dst_translation_table_pa)
+    }
+
+    // \TODO if memory is exhausted halfway through, the frames allocated so far are not freed.
+    // if you're THAT out of memory then you probably have bigger issues than that, but none the less
+    // this is a bug.
+    fn do_duplicate_table_recursive(src_ttpa: u64, dst_ttpa: u64, level: u8) -> Result<(), &'static str> {
+        if level > 3 {
+            return Ok(());
+        }
+
+        let src_table = ttbr1_to_va!(src_ttpa) as *const PageTable;
+        let dst_table = ttbr1_to_va!(dst_ttpa) as *mut PageTable;
+
+        for i in 0..PAGE_ENTRIES {
+            let src_entry = unsafe { (*src_table).entry[i] };
+            
+            // Check if the entry is valid (0b11)
+            if src_entry & 0b11 == 0b11 { 
+                let old_pa = src_entry & 0x0000_FFFF_FFFF_F000;
+                let flags = src_entry & !0x0000_FFFF_FFFF_F000; // Isolate lower/upper attribute bits
+
+                if level < 3 {
+                    let new_table_pa = match Self::get_free_frame_pa() {
+                        Some(pa) => pa as u64,
+                        None => return Err("Out of memory: failed to allocate intermediate page table"),
+                    };
+
+                    unsafe {
+                        (*(ttbr1_to_va!(new_table_pa) as *mut PageTable)).entry.fill(0);
+                        (*dst_table).entry[i] = new_table_pa | flags;
+                    }
+
+                    Self::do_duplicate_table_recursive(old_pa, new_table_pa, level + 1)?;
+                } else {
+                    let new_frame_pa = match Self::get_free_frame_pa() {
+                        Some(pa) => pa as u64,
+                        None => return Err("Out of memory: failed to allocate data frame for child process"),
+                    };
+
+                    unsafe {
+                        let src_ptr = ttbr1_to_va!(old_pa) as *const u8;
+                        let dst_ptr = ttbr1_to_va!(new_frame_pa) as *mut u8;
+                        
+                        core::ptr::copy_nonoverlapping(src_ptr, dst_ptr, 4096);
+
+                        (*dst_table).entry[i] = new_frame_pa | flags;
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
 
     pub fn free_page_table(ttbr0_val: Option<u64>) {
         let translation_table_pa = match ttbr0_val {

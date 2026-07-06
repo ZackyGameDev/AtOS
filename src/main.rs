@@ -12,7 +12,7 @@ use kernel::scheduler::Scheduler;
 use kernel::filesystem::FileSystem;
 
 // pub const DEBUG_PRINTS_ENABLED: bool = true;
-pub const DEBUG_PRINTS_ENABLED: bool = true;
+pub const DEBUG_PRINTS_ENABLED: bool = false;
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {
@@ -30,7 +30,7 @@ fn show_welcome_ascii() {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _rust_main() -> ! {
-    let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
+    // let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
     let stack_top_addr = unsafe { &_stack_top as *const u8 as usize };
 
     KERNEL_IO.init();
@@ -50,13 +50,13 @@ pub extern "C" fn _rust_main() -> ! {
     // let process_a_elf: &'static [u8] = include_bytes!("user/build/init");
     // let process_b_elf: &'static [u8] = include_bytes!("user/build/b");
 
-    // FileSystem::run_executable("init").unwrap();
-    FileSystem::run_executable("b").unwrap();
+    FileSystem::run_executable("init", 0).unwrap();
+    FileSystem::run_executable("b", 0).unwrap();
 
     println!("Starting the scheduler!");
     Scheduler::start();
 
-    the_end() // this should never be reached, but still keeping it here if preceeding code is changed during testings
+    // the_end() // this should never be reached, but still keeping it here if preceeding code is changed during testings
 }
 
 // usually, an os has a root user process which spawns all the other user processes.

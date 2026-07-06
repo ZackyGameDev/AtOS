@@ -1,4 +1,5 @@
 // Mutexes
+#![allow(unused)]
 
 use core::cell::Cell;
 use crate::kernel::spinlock::Spinlock;

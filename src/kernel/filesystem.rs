@@ -11,7 +11,7 @@ emulate it for now where for a given file name i return appropriate ELF bytes: &
 
 */
 
-use crate::{dprintln, kernel::paging::PageAllocator};
+use crate::{dprintln, kernel::processes::Process};
 
 pub struct FileSystem;
 
@@ -24,10 +24,11 @@ impl FileSystem {
         }
     }
 
-    pub fn run_executable(file_name: &str) -> Result<(), &'static str> {
+    pub fn run_executable(file_name: &str, parent_pid: u64) -> Result<(), &'static str> {
         dprintln!("FileSystem: run_executable called with file_name: {}", file_name);
         if let Some(elf_bytes) = Self::read_file(file_name) {
-            PageAllocator::load_elf_process(file_name, 0, elf_bytes);
+            let pid = Process::spawn_from_elf(file_name, parent_pid, elf_bytes)?;
+            dprintln!("[FILESYSTEM] Spawned process '{}' with PID {}", file_name, pid);
             Ok(())
         } else {
             Err("File not found")

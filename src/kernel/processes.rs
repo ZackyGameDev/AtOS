@@ -1,5 +1,6 @@
 #![allow(static_mut_refs, unused)]
 
+use crate::dprintln;
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::paging::PageAllocator;
 
@@ -127,6 +128,19 @@ impl Process {
                chan: 0, }
     }
 
+    // very self explanatory. this function loads an elf file into memory and creates a process for it.
+    // it returns the pid of the newly created process.
+    pub fn spawn_from_elf(name: &str, parent_pid: u64, bytes: &'static [u8]) -> Result<u64, &'static str> {
+        let (entry_point, stack_top, ttbr0) = PageAllocator::load_elf(bytes)?;
+
+        let process: Process = Process::new(name, parent_pid, entry_point, stack_top, ttbr0);
+        if let Err(e) = add_process_to_ptable(process) {
+            dprintln!("{}", e);
+            panic!("load_elf_process: {}", e);
+        }
+        Ok(process.pid)
+    }
+
     pub fn fork(&self) -> Result<Process, &'static str> {
         let new_ttbr0 = PageAllocator::duplicate_va_space(Some(self.pctx.ttbr0))?;
 
@@ -138,13 +152,16 @@ impl Process {
 
         let mut new_pctx = self.pctx;
         new_pctx.ttbr0 = new_ttbr0;
-        
+
+        dprintln!("[PROC_FORK] parent process is: {:?}", self);        
+        dprintln!("[PROC_FORK] child process context will be: {:?}", new_pctx);
+
         // this function does NOT set the return value in x0 for child process or parent process.
         // that part is supposed to be done by the syscall implementation. as the decision for what
         // to return in which register is made there, not here.
         Ok(Self { pid: new_pid,
                   name: self.name,
-                  state: self.state,
+                  state: ProcessState::Ready,
                   parent_pid: self.pid,
                   pctx: new_pctx,
                   chan: 0, } )

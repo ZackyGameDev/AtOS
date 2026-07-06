@@ -31,7 +31,6 @@ as the physical RAM exists.
 
 use crate::{ttbr1_to_pa, ttbr1_to_va, dprintln};
 use crate::kernel::elf::{Elf64Hdr, Elf64ProgHdr, PT_LOAD};
-use crate::kernel::processes::{Process, add_process_to_ptable};
 
 // TCR_EL1 register values for 4KB granule, 36-bit physical address space, inner shareable, write-back write-allocate cacheable memory
 #[used]
@@ -114,13 +113,12 @@ impl PageAllocator {
     // however that function is now deprecated because it was written before 
     // paging or virtualization was implemented. i have moved it here and modified it to use
     // the page allocator to load process in virtual memory and handle the translation table
-    pub fn load_elf_process(process_name: &str, parent_pid: u64, bytes: &'static [u8]) {
+    pub fn load_elf(bytes: &'static [u8]) -> Result<(u64, u64, u64), &'static str> {
         let header = match Elf64Hdr::mkfrombytes(bytes) {
             Some(h) => h,
             None => {
-                dprintln!("load_elf_process: invalid elf file header '{}'",
-                        process_name);
-                return;
+                dprintln!("load_elf_process: invalid elf file header");
+                return Err("Invalid ELF file header");
             }
         };
 
@@ -217,8 +215,8 @@ impl PageAllocator {
         }
         
         if !loaded_any_segments {
-            dprintln!("load_elf_process: no loadable segment found in '{}'", process_name);
-            return;
+            dprintln!("load_elf_process: no loadable segment found in elf");
+            return Err("No loadable segments found in ELF file");
         }
 
         let entry_point = header.entry;
@@ -226,12 +224,10 @@ impl PageAllocator {
         let stack_top: u64 = (max_allocated_addr + 0x4000) & !0xf;
 
         Self::alloc_page(stack_top as usize, Some(ttbr0));
+        Self::alloc_page(stack_top as usize - PAGE_SIZE, Some(ttbr0)); // allocate 2 pages for stack right now \TODO make this dynamic 
 
-        let process: Process = Process::new(process_name, parent_pid, entry_point, stack_top, ttbr0);
-        if let Err(e) = add_process_to_ptable(process) {
-            dprintln!("{}", e);
-            panic!("load_elf_process: {}", e);
-        }
+        Ok((entry_point, stack_top, ttbr0))
+
     }
 
     

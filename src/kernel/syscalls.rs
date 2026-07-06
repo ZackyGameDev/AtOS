@@ -1,6 +1,6 @@
 #![allow(unused_assignments)]
 
-use crate::kernel::processes::Process;
+use crate::kernel::processes::add_process_to_ptable;
 use crate::{print, dprintln};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::scheduler::Scheduler;
@@ -92,6 +92,8 @@ fn sys_fork(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
 
     child.pctx.x[0] = 0; // child process returns 0
     ctx.x[0] = child.pid; // parent process returns child's pid
+
+    add_process_to_ptable(child)?;
 
     Ok(())
 }

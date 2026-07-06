@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use core::fmt::{Arguments, Write};
 use crate::kernel::mutex::Mutex;
 use crate::kernel::peripherals::Uart;

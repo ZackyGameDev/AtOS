@@ -93,7 +93,7 @@ pub fn exit(exit_code: i32) -> ! {
 
 // fork is assigned syscall number 4 (svc #4)
 pub fn fork() -> i64 {
-    let mut r: u64;
+    let mut r: u64 = 12;
 
     unsafe {
         core::arch::asm!(

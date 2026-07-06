@@ -20,6 +20,7 @@ impl FileSystem {
         match file_name {
             "init" => Some(include_bytes!("../user/build/init")),
             "b" => Some(include_bytes!("../user/build/b")),
+            "echo" => Some(include_bytes!("../user/build/echo")),
             _ => None,
         }
     }

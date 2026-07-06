@@ -92,6 +92,8 @@ pub fn exit(exit_code: i32) -> ! {
 
 
 // fork is assigned syscall number 4 (svc #4)
+// returns 0 in the child process, and returns the pid of the 
+// child process in the parent process. -1 for error.
 pub fn fork() -> i64 {
     let mut r: u64 = 12;
 

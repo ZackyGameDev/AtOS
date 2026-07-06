@@ -11,7 +11,7 @@ fn main() {
     x += 1;
     println!("x = {}", x).unwrap();
 
-    for i in 0..100 {
+    for i in 0..20 {
         println!("init program is working, iteration {}", i).unwrap();
     }
     

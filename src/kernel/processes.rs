@@ -1,5 +1,7 @@
 #![allow(static_mut_refs, unused)]
 
+use core::default;
+
 use crate::dprintln;
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::paging::PageAllocator;
@@ -167,6 +169,18 @@ impl Process {
                   chan: 0, } )
     }
     
+    pub fn exec(&mut self, elf_bytes: &'static [u8]) -> Result<(), &'static str> {
+        let (entry_point, stack_top, new_ttbr0) = PageAllocator::load_elf(elf_bytes)?;
+
+        // Free the old page table
+        PageAllocator::free_page_table(Some(self.pctx.ttbr0));
+
+        // Update the process context with the new entry point, stack pointer, and page table
+        self.pctx = ProcessContext::new(entry_point, stack_top, new_ttbr0);
+
+        Ok(())
+    }
+
     pub fn terminate(&mut self) {
         self.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));

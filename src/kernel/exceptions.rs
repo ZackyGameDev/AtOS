@@ -69,8 +69,6 @@ fn print_exception_context(ctx: &ExceptionContext) -> () {
     println!("SPSR : {:#018x}", ctx.spsr);
     println!("ESR  : {:#018x}", ctx.esr);
     println!("FAR  : {:#018x}", ctx.far);
-    println!("ESR  : {:#018x}", ctx.esr);
-    println!("FAR  : {:#018x}", ctx.far);
     println!("SP_EL0 : {:#018x}", ctx.sp_el0);
     println!("TTBR0  : {:#018x}", ctx.ttbr0);
     println!("Registers:");

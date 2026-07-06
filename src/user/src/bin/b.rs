@@ -4,7 +4,7 @@
 #![no_main]
 
 use user::{entry, println};
-use user::stdlib::syscalls::fork;
+use user::stdlib::syscalls::{fork, exec};
 
 fn parent_do() {
     println!("This is the parent process doing work!").unwrap();
@@ -19,10 +19,11 @@ fn parent_do() {
 fn child_do() {
     println!("This is the child process doing work!").unwrap();
 
-    for i in 0..20 {
+    for i in 0..10 {
         println!("child process is working, iteration {}", i).unwrap();
     }
-    println!("child process is done working, it will now exit.").unwrap();
+    println!("child process is done working, it will now attempt exec(\"init\")").unwrap();
+    exec("init").unwrap();
 }
 
 fn main() {
@@ -30,13 +31,17 @@ fn main() {
     
     println!("Trying to fork in B!").unwrap();
 
-    let fc = fork();
-    if fc == 0 {
-        child_do();
-    } else if fc == -1 {
-        println!("fork() returned -1, so this is the parent process and the fork failed!").unwrap();
-    } else {
-        parent_do();
+    match fork() {
+        Ok(fc) => {
+            if fc == 0 {
+                child_do();
+            } else {
+                parent_do();
+            }
+        }
+        Err(_) => {
+            println!("fork() failed!").unwrap();
+        }
     }
 }
 

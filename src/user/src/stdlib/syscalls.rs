@@ -94,8 +94,8 @@ pub fn exit(exit_code: i32) -> ! {
 // fork is assigned syscall number 4 (svc #4)
 // returns 0 in the child process, and returns the pid of the 
 // child process in the parent process. -1 for error.
-pub fn fork() -> i64 {
-    let mut r: u64 = 12;
+pub fn fork() -> Result<u64, &'static str> {
+    let mut r: u64;
 
     unsafe {
         core::arch::asm!(
@@ -105,5 +105,28 @@ pub fn fork() -> i64 {
         );
     }
 
-    r as i64
+    if r as i64 == -1 {
+        Err("fork failed")
+    } else {
+        Ok(r)
+    }
+}
+
+// exec is syscall number 5. it works like C's exec. 
+// takes a path, then replaces the current process with the new process at the path.
+pub fn exec(path: &str) -> fmt::Result {
+    let mut r: u64; 
+    unsafe {
+        core::arch::asm!(
+            "svc #5",
+            inout("x0") path.as_ptr() => r,
+            in("x1") path.len(),
+        );
+    }
+
+    if r == 0 {
+        Ok(())
+    } else {
+        Err(fmt::Error)
+    }
 }

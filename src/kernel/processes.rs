@@ -5,6 +5,7 @@ use core::default;
 use crate::{dprintln, print};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::paging::PageAllocator;
+use crate::kernel::spinlock::Spinlock;
 
 pub const MAX_PROCESSES: usize = 50;
 pub const MAX_CPUS: usize = 1; // for now
@@ -62,6 +63,8 @@ pub fn mycpu() -> &'static mut Cpu {
 
 pub static mut PROCESS_TABLE: [Option<Process>; MAX_PROCESSES] = [None; MAX_PROCESSES];
 pub static mut NEXT_PID: u64 = 1; // 0 could be for kernel
+// Global spinlock protecting PROCESS_TABLE and related parent/child checks.
+pub static PROCESS_TABLE_LOCK: Spinlock = Spinlock::new("process_table");
 
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -71,6 +74,14 @@ pub enum ProcessState {
     Running,
     Blocked,
     Terminated,
+}
+
+#[repr(u8)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[allow(unused)]
+pub enum BlockReason {
+    WaitingForChild,
+    // ... add more as needed
 }
 
 #[repr(C)]
@@ -103,6 +114,7 @@ pub struct Process {
     pub pid: u64,
     pub name: [u8; 32],
     pub state: ProcessState,
+    pub block_reason: Option<BlockReason>,
     pub parent_pid: u64, // initially this was &Parent but then i'd have to deal with rust lifetime complications
     pub pctx: ProcessContext,
     pub chan: u64,
@@ -125,6 +137,7 @@ impl Process {
         Self { pid,
                name: name_bytes,
                state: ProcessState::Ready,
+               block_reason: None,
                parent_pid,
                pctx: ProcessContext::new(entry_point, sp, ttbr0),
                chan: 0, }
@@ -164,6 +177,7 @@ impl Process {
         Ok(Self { pid: new_pid,
                   name: self.name,
                   state: ProcessState::Ready,
+                  block_reason: None,
                   parent_pid: self.pid,
                   pctx: new_pctx,
                   chan: 0, } )

@@ -2,6 +2,7 @@
 
 use crate::kernel::filesystem::FileSystem;
 use crate::kernel::processes::add_process_to_ptable;
+use crate::kernel::processes::{PROCESS_TABLE, PROCESS_TABLE_LOCK, ProcessState, BlockReason};
 use crate::{print, dprintln};
 use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::scheduler::Scheduler;
@@ -18,6 +19,7 @@ pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
         3 => sys_exit(ctx).unwrap(),
         4 => sys_fork(ctx).unwrap(),
         5 => sys_exec(ctx).unwrap(),
+        6 => sys_wait(ctx).unwrap(),
         _ => {
             print!("Unknown syscall: {}", syscall_number);
         }
@@ -64,14 +66,86 @@ fn sys_exit(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
     dprintln!("[SYS_EXIT] Process exiting with code: {}", exit_code);
 
     if let Some(current_process) = Scheduler::get_current_process() {
+        // Acquire process table lock to avoid races with wait()
+        PROCESS_TABLE_LOCK.acquire();
+
         current_process.terminate();
+        let parent = current_process.parent_pid;
         dprintln!("[SYS_EXIT] Process pid {}, name \"{:?}\" terminated.", current_process.pid, current_process.name);
+
+        // Wake up parent (if it's waiting). Use parent PID as the wake channel.
+        Scheduler::wakeup(parent as usize as *const ());
+
+        PROCESS_TABLE_LOCK.release();
     } else {
         dprintln!("[SYS_EXIT] Process to terminate not found. (???)");
     }
 
     Scheduler::schedule_next(ctx);
     Ok(())
+}
+
+// SYSCALL #6 -- WAIT
+// x0: pid to wait for (0 = any child)
+fn sys_wait(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
+    let target_pid = ctx.x[0] as u64; // 0 means any child
+
+    let current_pid = match Scheduler::get_current_process() {
+        Some(p) => p.pid,
+        None => {
+            ctx.x[0] = u64::MAX;
+            return Ok(());
+        }
+    };
+
+    loop {
+        // Lock the process table while we inspect child state to avoid lost wakeups
+        PROCESS_TABLE_LOCK.acquire();
+
+        // Scan for children matching target
+        let mut found_child = false;
+        unsafe {
+            let table_ptr = core::ptr::addr_of_mut!(PROCESS_TABLE) as *mut Option<crate::kernel::processes::Process>;
+            for i in 0..crate::kernel::processes::MAX_PROCESSES {
+                let slot = &mut *table_ptr.add(i);
+                if let Some(proc) = slot {
+                    if proc.parent_pid == current_pid && (target_pid == 0 || proc.pid == target_pid) {
+                        found_child = true;
+                        if proc.state == ProcessState::Terminated {
+                            let child_pid = proc.pid;
+                            // Reap the child slot
+                            *slot = None;
+                            PROCESS_TABLE_LOCK.release();
+                            ctx.x[0] = child_pid;
+                            return Ok(());
+                        }
+                    }
+                }
+            }
+        }
+
+        if !found_child {
+            // No matching child exists
+            PROCESS_TABLE_LOCK.release();
+            ctx.x[0] = u64::MAX; // indicate error / no child
+            return Ok(());
+        }
+
+        // Found at least one child but none terminated yet: block current process
+        if let Some(curr) = Scheduler::get_current_process() {
+            curr.set_state(ProcessState::Blocked);
+            curr.block_reason = Some(BlockReason::WaitingForChild);
+            curr.chan = current_pid as u64; // sleep channel is parent's pid
+        } else {
+            PROCESS_TABLE_LOCK.release();
+            ctx.x[0] = u64::MAX;
+            return Ok(());
+        }
+
+        // Sleep will release the PROCESS_TABLE_LOCK atomically while blocking
+        Scheduler::sleep(current_pid as usize as *const (), &PROCESS_TABLE_LOCK);
+        // When woken up, loop and re-check children
+    }
 }
 
 /* SYSCALL #4 -- FORK */

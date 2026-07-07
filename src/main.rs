@@ -47,8 +47,10 @@ pub extern "C" fn _rust_main() -> ! {
 
     println!("Physical Timer frequency: {} Hz", frq);
 
+    // since fork and exec syscalls have been implemented,
+    // init process itself can spawn other processes needed. 
+    // so we only need to 
     FileSystem::run_executable("init", 0).unwrap();
-    FileSystem::run_executable("b", 0).unwrap();
 
     println!("Starting the scheduler!");
     Scheduler::start();

@@ -114,7 +114,7 @@ pub fn fork() -> Result<u64, &'static str> {
 
 // exec is syscall number 5. it works like C's exec. 
 // takes a path, then replaces the current process with the new process at the path.
-pub fn exec(path: &str) -> fmt::Result {
+pub fn exec(path: &str) -> Result<(), &'static str> {
     let mut r: u64; 
     unsafe {
         core::arch::asm!(
@@ -124,9 +124,24 @@ pub fn exec(path: &str) -> fmt::Result {
         );
     }
 
-    if r == 0 {
-        Ok(())
+    if r as i64 == -1 {
+        Err("exec failed")
     } else {
-        Err(fmt::Error)
+        Ok(())
+    }
+}
+
+// wait is syscall number 6. it works like C's wait. 
+// takes a pid, then waits for the process with that pid to finish.
+// if no pid is given it waits for any child to finish.
+pub fn wait(pid: Option<u64>) -> Result<(), &'static str> {
+    let mut r: u64;
+    let pid_val = pid.unwrap_or(0); // we know a child could never have 0 pid so os treats it as no value
+    unsafe {
+        core::arch::asm!(
+            "svc #6",
+            inout("x0") pid_val => r,
+            clobber_abi("C")
+        );
     }
 }

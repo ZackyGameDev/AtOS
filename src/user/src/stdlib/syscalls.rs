@@ -80,7 +80,7 @@ pub fn sys_readline(buf: &mut [u8]) -> usize {
 
 /* ~~~ PROCESS CONTROL ~~~ */
 // exit is assigned syscall number 3 (svc #3)
-pub fn exit(exit_code: i32) -> ! {
+pub fn exit(exit_code: i64) -> ! {
     unsafe {
         core::arch::asm!(
             "svc #3",
@@ -134,14 +134,22 @@ pub fn exec(path: &str) -> Result<(), &'static str> {
 // wait is syscall number 6. it works like C's wait. 
 // takes a pid, then waits for the process with that pid to finish.
 // if no pid is given it waits for any child to finish.
-pub fn wait(pid: Option<u64>) -> Result<(), &'static str> {
+pub fn wait(pid: Option<u64>) -> Result<(u64, i64), &'static str> {
     let mut r: u64;
+    let mut exit_code: i64 = 0;
     let pid_val = pid.unwrap_or(0); // we know a child could never have 0 pid so os treats it as no value
     unsafe {
         core::arch::asm!(
             "svc #6",
             inout("x0") pid_val => r,
+            out("x1") exit_code,
             clobber_abi("C")
         );
+    }
+
+    if r as i64 == -1 {
+        Err("wait failed")
+    } else {
+        Ok((r, exit_code))
     }
 }

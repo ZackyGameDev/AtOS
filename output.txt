@@ -9,11 +9,11 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio  -
           =%* =-  =| %                      Scheduler:     Round Robin
         +%# ==    =| %                      Timer:         PhysicalNonSecure
        %% ==      =| %%%%%%%%%%%%%%%%%%%%%  IO:            Mini UART
-     %% ===========|=================-  %   Build:         2026-07-07 01:07:41
+     %% ===========|=================-  %   Build:         2026-07-07 23:04:43
    %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
  %% :+            =| +   = \==\      %%     Repository:    https://github.com/ZackyGameDev/AtOS
 #%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
-   ############*% +|     %%********         git hash:      8e87957
+   ############*% +|     %%********         git hash:      a76cee2
                 % +|   %%               
                 % +| %%                 
                 %  %%                   
@@ -25,72 +25,12 @@ Kernel done. Loading two processes for demonstration.
 Physical Timer frequency: 62500000 Hz
 Starting the scheduler!
 hello this code is running in the init program!
-hello this code is running in process B!
-Trying to fork in B!
 x = 1
-x = 2
-init program is working, iteration 0
-init program is working, iteration This is the parent process doing work!
-parent process is working, iteration This is the child process doing work!
-child process is working, iteration 1
-init program is working, iteration 2
-init program is working, iteration 3
-init program is working, iteration 4
-init program is working, iteration 5
-init program is working, iteration 6
-init program is working, iteration 7
-init program is working, iteration 0
-parent process is working, iteration 1
-parent process is working, iteration 2
-parent process is working, iteration 3
-parent process is working, iteration 4
-parent process is working, iteration 0
-child process is working, iteration 1
-child process is working, iteration 2
-child process is working, iteration 3
-child process is working, iteration 4
-child process is working, iteration 58
-init program is working, iteration 9
-init program is working, iteration 10
-init program is working, iteration 11
-init program is working, iteration 12
-init program is working, iteration 13
-init program is working, iteration 14
-init program is working, iteration 5
-parent process is working, iteration 6
-parent process is working, iteration 7
-parent process is working, iteration 8
-parent process is working, iteration 9
-parent process is working, iteration 10
-parent process is working, iteration 
-child process is working, iteration 6
-child process is working, iteration 7
-child process is working, iteration 8
-child process is working, iteration 9
-child process is done working, it will now attempt exec("init")
-15
-init program is working, iteration 16
-init program is working, iteration 17
-init program is working, iteration 18
-init program is working, iteration 19
-init program is done working, it will now exit.
-11hello this code is running in the init program!
-x = 
-parent process is working, iteration 12
-parent process is working, iteration 13
-parent process is working, iteration 14
-parent process is working, iteration 15
-parent process is working, iteration 16
-parent process is working, iteration 17
-parent process is working, iteration 1
 x = 2
 init program is working, iteration 0
 init program is working, iteration 1
 init program is working, iteration 2
-init program is working, iteration 18
-parent process is working, iteration 19
-parent process is done working, it will now exit.
-3
+init program is working, iteration 3
 init program is working, iteration 4
 init program is working, iteration 5
 init program is working, iteration 6
@@ -107,6 +47,69 @@ init program is working, iteration 16
 init program is working, iteration 17
 init program is working, iteration 18
 init program is working, iteration 19
-init program is done working, it will now exit.
+init program will now fork and wait for the child to finish.
+I'm parent, now waiting for child to finish
+child working 0
+child working 1
+child working 2
+child working 3
+child working 4
+child working 5
+child working 6
+child working 7
+child working 8
+child working 9
+child is done working, it will now exit.
+parent waited for child process with pid 2 to finish, it exited with code 0
+parent will now exit.
+before exiting, spawning process c for next test.
+hello this code is running in the c program!
+x = 1
+x = 2
+c program is working, iteration 0
+c program is working, iteration 1
+c program is working, iteration 2
+c program is working, iteration 3
+c program is working, iteration 4
+c program is working, iteration 5
+c program is working, iteration 6
+c program is working, iteration 7
+c program is working, iteration 8
+c program is working, iteration 9
+c program is working, iteration 10
+c program is working, iteration 11
+c program is working, iteration 12
+c program is working, iteration 13
+c program is working, iteration 14
+c program is working, iteration 15
+c program is working, iteration 16
+c program is working, iteration 17
+c program is working, iteration 18
+c program is working, iteration 19
+c program will now fork and wait for the child to finish.
+I'm c parent, now working
+c parent working 0
+c parent working 1
+c parent working 2
+c parent working 3
+c parent working 4
+c parent working 5
+c parent working 6
+c parent working 7
+c parent working 8
+c parent working 9
+c parent working 10
+c parent working 11
+c parent working 12
+c parent working 13
+c parent working 14
+i'm c child! i finished early!
+-----------PANIC------------
+Location: src/bin/c.rs:23:17
+Message:  Hi im c child. I just paniced here to check if my parent receives my exit code 1.
+----------------------------
+c parent waited for child process with pid 4 to finish, it exited with code 1
+c parent will now exit.
+----------THE END-----------
 All processes have completed/terminated.
 There is nothing left to do. You may power off your device now.

@@ -3,7 +3,7 @@
 use core::default;
 
 use crate::{dprintln, print};
-use crate::kernel::exceptions::ExceptionContext;
+use crate::kernel::exceptions::{self, ExceptionContext};
 use crate::kernel::paging::PageAllocator;
 use crate::kernel::spinlock::Spinlock;
 
@@ -118,6 +118,7 @@ pub struct Process {
     pub parent_pid: u64, // initially this was &Parent but then i'd have to deal with rust lifetime complications
     pub pctx: ProcessContext,
     pub chan: u64,
+    pub exit_code: i64, // for terminated processes
 }
 
 impl Process {
@@ -140,7 +141,8 @@ impl Process {
                block_reason: None,
                parent_pid,
                pctx: ProcessContext::new(entry_point, sp, ttbr0),
-               chan: 0, }
+               chan: 0,
+               exit_code: 0, }
     }
 
     // very self explanatory. this function loads an elf file into memory and creates a process for it.
@@ -180,7 +182,8 @@ impl Process {
                   block_reason: None,
                   parent_pid: self.pid,
                   pctx: new_pctx,
-                  chan: 0, } )
+                  chan: 0,
+                  exit_code: 0, } )
     }
     
     pub fn exec(&mut self, elf_bytes: &'static [u8]) -> Result<(), &'static str> {
@@ -195,7 +198,13 @@ impl Process {
         Ok(())
     }
 
-    pub fn terminate(&mut self) {
+    pub fn block(&mut self, reason: BlockReason) {
+        self.set_state(ProcessState::Blocked);
+        self.block_reason = Some(reason);
+    }
+
+    pub fn terminate(&mut self, exit_code: i64) {
+        self.exit_code = exit_code;
         self.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));
     }
@@ -259,6 +268,19 @@ pub fn add_process_to_ptable(process: Process) -> Result<(), &'static str> {
     Err("Process table is full")
 }
 
+pub fn remove_process_from_ptable(pid: u64) -> Result<(), &'static str> {
+    unsafe {
+        for slot in PROCESS_TABLE.iter_mut() {
+            if let Some(proc) = slot {
+                if proc.pid == pid {
+                    *slot = None;
+                    return Ok(());
+                }
+            }
+        }
+    }
+    Err("Process not found")
+}
 
 /* 
 

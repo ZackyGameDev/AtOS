@@ -21,6 +21,7 @@ impl FileSystem {
             "init" => Some(include_bytes!("../user/build/init")),
             "b" => Some(include_bytes!("../user/build/b")),
             "echo" => Some(include_bytes!("../user/build/echo")),
+            "c" => Some(include_bytes!("../user/build/c")),
             _ => None,
         }
     }

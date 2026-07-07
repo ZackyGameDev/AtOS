@@ -9,7 +9,7 @@ use crate::dprintln;
 use crate::the_end;
 
 pub static mut CURRENT_PROCESS: usize = 1; // last scheduled process index in process table
-pub const TIMESLICE_MILISECONDS: u64 = 1;
+pub const TIMESLICE_MILISECONDS: u64 = 9;
 
 // we implement xv6 similar round robin
 pub struct Scheduler;
@@ -132,7 +132,7 @@ impl Scheduler {
 
             core::arch::asm!("svc #0");
 
-            mutex_guard.acquire();
+            mutex_guard.acquire(); // \REVIEW this will never be reached? 
         }
     }
 

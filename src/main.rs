@@ -65,6 +65,7 @@ pub extern "C" fn _rust_main() -> ! {
 // processes. in that case this is the function that the scheduler will call
 // if it sees there are no more processes left to schedule.
 pub fn the_end() -> ! {
+    println!("----------THE END-----------");
     println!("All processes have completed/terminated.");
     println!("There is nothing left to do. You may power off your device now.");
     PhysicalTimer::set_seconds(1);

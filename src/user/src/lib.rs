@@ -13,8 +13,16 @@ macro_rules! entry {
 
         use core::panic::PanicInfo;
         #[panic_handler]
-        fn panic(_info: &PanicInfo) -> ! {
-            println!("Rust exception occured in user space!").unwrap();
+        fn panic(info: &PanicInfo) -> ! {
+            println!("-----------PANIC------------").unwrap();
+            if let Some(location) = info.location() {
+                println!("Location: {}:{}:{}", location.file(), location.line(), location.column()).unwrap();
+            } else {
+                println!("Location: Unknown location").unwrap();
+            }
+            println!("Message:  {}", info.message()).unwrap();
+            println!("----------------------------").unwrap();
+
             user::stdlib::syscalls::exit(1);
         }
     };

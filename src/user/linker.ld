@@ -19,7 +19,4 @@ SECTIONS
     .bss : {
         *(.bss*)
     }
-    
-    . = ALIGN(16);
-    _user_stack_top = . + 0x4000; /* unused */
 }

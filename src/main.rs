@@ -47,9 +47,6 @@ pub extern "C" fn _rust_main() -> ! {
 
     println!("Physical Timer frequency: {} Hz", frq);
 
-    // let process_a_elf: &'static [u8] = include_bytes!("user/build/init");
-    // let process_b_elf: &'static [u8] = include_bytes!("user/build/b");
-
     FileSystem::run_executable("init", 0).unwrap();
     FileSystem::run_executable("b", 0).unwrap();
 
@@ -77,6 +74,13 @@ use core::panic::PanicInfo;
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {
-    println!("Kernel Panicked!: {}", panic);
+    println!("--------KERNEL PANIC--------");
+    if let Some(location) = panic.location() {
+        println!("Location: {}:{}:{}", location.file(), location.line(), location.column());
+    } else {
+        println!("Location: Unknown location");
+    }
+    println!("Message:  {}", panic.message());
+    println!("----------------------------");
     loop {core::hint::spin_loop(); }
 }

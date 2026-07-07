@@ -27,71 +27,71 @@ Starting the scheduler!
 hello this code is running in the init program!
 hello this code is running in process B!
 Trying to fork in B!
-This is the child process doing work!
-child process is working, iteration x = 1
+x = 1
 x = 2
 init program is working, iteration 0
-init program is working, iteration 1
 init program is working, iteration This is the parent process doing work!
-parent process is working, iteration 0
-parent process is working, iteration 1
-parent process is working, iteration 0
+parent process is working, iteration This is the child process doing work!
 child process is working, iteration 1
-child process is working, iteration 2
-child process is working, iteration 3
-child process is working, iteration 4
-child process is working, iteration 2
+init program is working, iteration 2
 init program is working, iteration 3
 init program is working, iteration 4
 init program is working, iteration 5
 init program is working, iteration 6
 init program is working, iteration 7
-init program is working, iteration 82
+init program is working, iteration 0
+parent process is working, iteration 1
+parent process is working, iteration 2
 parent process is working, iteration 3
 parent process is working, iteration 4
-parent process is working, iteration 5
-parent process is working, iteration 6
-parent process is working, iteration 7
-parent process is working, iteration 5
-child process is working, iteration 6
-child process is working, iteration 7
-child process is working, iteration 8
-child process is working, iteration 9
-child process is done working, it will now attempt exec("init")
-
+parent process is working, iteration 0
+child process is working, iteration 1
+child process is working, iteration 2
+child process is working, iteration 3
+child process is working, iteration 4
+child process is working, iteration 58
 init program is working, iteration 9
 init program is working, iteration 10
 init program is working, iteration 11
 init program is working, iteration 12
 init program is working, iteration 13
-init program is working, iteration 8
+init program is working, iteration 14
+init program is working, iteration 5
+parent process is working, iteration 6
+parent process is working, iteration 7
+parent process is working, iteration 8
 parent process is working, iteration 9
 parent process is working, iteration 10
-parent process is working, iteration 11
-parent process is working, iteration 12
-hello this code is running in the init program!
-x = 1
-14
-init program is working, iteration 15
+parent process is working, iteration 
+child process is working, iteration 6
+child process is working, iteration 7
+child process is working, iteration 8
+child process is working, iteration 9
+child process is done working, it will now attempt exec("init")
+15
 init program is working, iteration 16
 init program is working, iteration 17
 init program is working, iteration 18
 init program is working, iteration 19
 init program is done working, it will now exit.
+11hello this code is running in the init program!
+x = 
+parent process is working, iteration 12
 parent process is working, iteration 13
 parent process is working, iteration 14
 parent process is working, iteration 15
 parent process is working, iteration 16
 parent process is working, iteration 17
-parent process is working, iteration 18x = 2
+parent process is working, iteration 1
+x = 2
 init program is working, iteration 0
 init program is working, iteration 1
 init program is working, iteration 2
-init program is working, iteration 3
-init program is working, iteration 
+init program is working, iteration 18
 parent process is working, iteration 19
 parent process is done working, it will now exit.
-4
+3
+init program is working, iteration 4
 init program is working, iteration 5
 init program is working, iteration 6
 init program is working, iteration 7

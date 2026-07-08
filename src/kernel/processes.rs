@@ -1,74 +1,65 @@
 #![allow(static_mut_refs, unused)]
 
-use core::default;
-
-use crate::{dprintln, print};
-use crate::kernel::exceptions::{self, ExceptionContext};
+use crate::kernel::exceptions::ExceptionContext;
 use crate::kernel::paging::PageAllocator;
 use crate::kernel::spinlock::Spinlock;
+use crate::dprintln;
 
+// Restrictions for current hardware
 pub const MAX_PROCESSES: usize = 50;
-pub const MAX_CPUS: usize = 1; // for now
+pub const MAX_CPUS: usize = 4;
 
-//
-// CPU Abstraction
-//
-
+#[derive(Debug)]
 pub struct Cpu {
     pub cid: usize,
-    pub current_pid: Option<u64>, // Tracking the running proc by id
-
-    pub ncli: usize, // Depth of nested spinlocks held on this CPU
-    pub interrupts_enabled: bool, // Were interrupts enabled BEFORE the very first lock?
+    pub current_pid: Option<u64>,
+    pub ncli: usize, // Depth of nested spinlocks
+    pub were_interrupts_enabled: bool, // Interrupt state before first lock
 }
+
+pub static mut CPUS: [Cpu; MAX_CPUS] = [
+    Cpu { cid: 0, current_pid: None, ncli: 0, were_interrupts_enabled: false },
+    Cpu { cid: 1, current_pid: None, ncli: 0, were_interrupts_enabled: false },
+    Cpu { cid: 2, current_pid: None, ncli: 0, were_interrupts_enabled: false },
+    Cpu { cid: 3, current_pid: None, ncli: 0, were_interrupts_enabled: false },
+];
 
 impl Cpu {
-    // This gets called by current to get raw physical address. get_instance()
-    // doesn't know anything about CPU cores. Its only job is to manage static
-    // memory. This is like returning the base address of the global Cpu
-    // structs.
-    fn get_instance() -> &'static mut [Cpu; MAX_CPUS] {
-        static mut CPUS: [Cpu; MAX_CPUS] = [
-            Cpu { cid: 0, ncli: 0, interrupts_enabled: false, current_pid: None }
-        ];
-        unsafe { &mut CPUS }
-    }
-
-    // This calls get_instance to get the base address and then (when we do have
-    // multiple cores) indexes into the correct Cpu structure belonging to that
-    // specific core.
     pub fn current() -> &'static mut Self {
-        // For now. Later, we'll check mpidr_el1
-        let cpus = Self::get_instance();
-        &mut cpus[0]
+        let mpidr: u64;
+        unsafe {
+            core::arch::asm!("mrs {}, mpidr_el1", out(reg) mpidr, options(nostack, preserves_flags));
+
+            // Core ID is stored in "Affinity Level" (wtf is that name) bits 0-7
+            let core_id = (mpidr & 0xFF) as usize;
+            &mut CPUS[core_id]
+        }
     }
 
-    pub fn set_current_process(&mut self, pid: u64) {
-        self.current_pid = Some(pid);
-    }
+    // Minimal interface mutations required by the scheduler
+    #[inline(always)]
+    pub fn set_current_process(&mut self, pid: u64) { self.current_pid = Some(pid); }
 
-    pub fn clear_current_process(&mut self) {
-        self.current_pid = None;
-    }
+    #[inline(always)]
+    pub fn clear_current_process(&mut self) { self.current_pid = None; }
+
 }
 
-// This will act as a nice utility function without going into Cpu methods.
+#[inline(always)]
 pub fn mycpu() -> &'static mut Cpu {
     Cpu::current()
 }
 
-//
-// Processes
-//
+// Process Table
 
 pub static mut PROCESS_TABLE: [Option<Process>; MAX_PROCESSES] = [None; MAX_PROCESSES];
 pub static mut NEXT_PID: u64 = 1; // 0 could be for kernel
+
 // Global spinlock protecting PROCESS_TABLE and related parent/child checks.
 pub static PROCESS_TABLE_LOCK: Spinlock = Spinlock::new("process_table");
 
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[allow(unused)]
 pub enum ProcessState {
     Ready,
     Running,
@@ -78,7 +69,6 @@ pub enum ProcessState {
 
 #[repr(u8)]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[allow(unused)]
 pub enum BlockReason {
     WaitingForChild,
     // ... add more as needed
@@ -95,8 +85,14 @@ pub struct ProcessContext {
 }
 
 impl ProcessContext {
-    pub fn new(entry_point: u64, sp: u64, ttbr0: u64) -> Self {
-        Self { elr: entry_point, sp, ttbr0, ..Default::default() }
+    pub const fn new(entry_point: u64, sp: u64, ttbr0: u64) -> Self {
+        Self {
+            x: [0; 31],
+            sp,
+            elr: entry_point,
+            spsr: 0,
+            ttbr0,
+        }
     }
 
     pub fn from_ectx(ctx: &ExceptionContext) -> Self {
@@ -110,7 +106,6 @@ impl ProcessContext {
 #[repr(C)]
 #[derive(Debug, Clone, Copy)]
 pub struct Process {
-    // identity
     pub pid: u64,
     pub name: [u8; 32],
     pub state: ProcessState,
@@ -121,41 +116,55 @@ pub struct Process {
     pub exit_code: i64, // for terminated processes
 }
 
+// Flat definition to be used by other functions to find a process (when possible)
+fn find_index_by_id(pid: u64) -> Option<usize> {
+    unsafe {
+        for (i, slot) in PROCESS_TABLE.iter().enumerate() {
+            if let Some(proc) = slot {
+                if proc.pid == pid {
+                    return Some(i);
+                }
+            }
+        }
+    }
+    None
+}
+
 impl Process {
     pub fn new(name: &str, parent_pid: u64, entry_point: u64, sp: u64, ttbr0: u64) -> Self {
         let pid = unsafe {
-            let pid = NEXT_PID;
+            let id = NEXT_PID;
             NEXT_PID += 1;
-            pid
+            id
         };
 
         let mut name_bytes = [0u8; 32];
         let bytes = name.as_bytes();
-
-        let len = core::cmp::min(bytes.len(), 32);
+        let len = if bytes.len() > 32 { 32 } else { bytes.len() };
         name_bytes[..len].copy_from_slice(&bytes[..len]);
 
-        Self { pid,
-               name: name_bytes,
-               state: ProcessState::Ready,
-               block_reason: None,
-               parent_pid,
-               pctx: ProcessContext::new(entry_point, sp, ttbr0),
-               chan: 0,
-               exit_code: 0, }
+        Self {
+            pid,
+            name: name_bytes,
+            state: ProcessState::Ready,
+            block_reason: None,
+            parent_pid,
+            pctx: ProcessContext::new(entry_point, sp, ttbr0),
+            chan: 0,
+            exit_code: 0,
+        }
     }
 
-    // very self explanatory. this function loads an elf file into memory and creates a process for it.
-    // it returns the pid of the newly created process.
+    // Very self explanatory. This function loads an elf file into memory and
+    // creates a process for it.  It returns the pid of the newly created
+    // process.
     pub fn spawn_from_elf(name: &str, parent_pid: u64, bytes: &'static [u8]) -> Result<u64, &'static str> {
         let (entry_point, stack_top, ttbr0) = PageAllocator::load_elf(bytes)?;
+        let process = Process::new(name, parent_pid, entry_point, stack_top, ttbr0);
+        let pid = process.pid;
 
-        let process: Process = Process::new(name, parent_pid, entry_point, stack_top, ttbr0);
-        if let Err(e) = add_process_to_ptable(process) {
-            dprintln!("{}", e);
-            panic!("load_elf_process: {}", e);
-        }
-        Ok(process.pid)
+        add_process_to_ptable(process)?;
+        Ok(pid)
     }
 
     pub fn fork(&self) -> Result<Process, &'static str> {
@@ -185,7 +194,7 @@ impl Process {
                   chan: 0,
                   exit_code: 0, } )
     }
-    
+
     pub fn exec(&mut self, elf_bytes: &'static [u8]) -> Result<(), &'static str> {
         let (entry_point, stack_top, new_ttbr0) = PageAllocator::load_elf(elf_bytes)?;
 
@@ -199,63 +208,42 @@ impl Process {
     }
 
     pub fn block(&mut self, reason: BlockReason) {
-        self.set_state(ProcessState::Blocked);
+        self.state = ProcessState::Blocked;
         self.block_reason = Some(reason);
     }
 
     pub fn terminate(&mut self, exit_code: i64) {
         self.exit_code = exit_code;
-        self.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
+        self.state = ProcessState::Terminated; // \TODO currently terminated processes stay indefinitely process table.
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));
     }
 
-    pub fn set_state(&mut self, new_state: ProcessState) {
-        self.state = new_state;
-    }
+    // Minimal state mutation utils required by the scheduler and syscalls (in order to not break those completely on refactor)
+    #[inline(always)]
+    pub fn set_state(&mut self, state: ProcessState) { self.state = state; }
 
-    pub fn set_pctx(&mut self, new_ctx: ProcessContext) {
-        self.pctx = new_ctx;
-    }
+    #[inline(always)]
+    pub fn set_pctx(&mut self, ctx: ProcessContext) { self.pctx = ctx; }
 
+
+    // Utils
     pub fn get_current() -> Option<&'static mut Process> {
-        let cpu = Cpu::current();
-        let current_id = cpu.current_pid?;
-
-        unsafe {
-            for slot in PROCESS_TABLE.iter_mut() {
-                if let Some(proc) = slot {
-                    if proc.pid == current_id {
-                        return Some(proc);
-                    }
-                }
-            }
-        }
-        None
-    }
-
-    pub fn find_by_ptable_index(index: usize) -> Option<&'static mut Process> {
-        if index >= MAX_PROCESSES {
-            return None;
-        }
-        unsafe {
-            PROCESS_TABLE[index].as_mut()
-        }
+        let current_id = Cpu::current().current_pid?;
+        Self::find_by_id(current_id)
     }
 
     pub fn find_by_id(pid: u64) -> Option<&'static mut Process> {
-        unsafe {
-            for slot in PROCESS_TABLE.iter_mut() {
-                if let Some(proc) = slot {
-                    if proc.pid == pid {
-                        return Some(proc);
-                    }
-                }
-            }
-        }
-        None
+        let i = find_index_by_id(pid)?;
+        unsafe { PROCESS_TABLE[i].as_mut() }
+    }
+
+    pub fn find_by_ptable_index(index: usize) -> Option<&'static mut Process> {
+        if index >= MAX_PROCESSES { return None; }
+        unsafe { PROCESS_TABLE[index].as_mut() }
     }
 }
 
+// Global Mutations
 pub fn add_process_to_ptable(process: Process) -> Result<(), &'static str> {
     unsafe {
         for slot in PROCESS_TABLE.iter_mut() {
@@ -265,123 +253,15 @@ pub fn add_process_to_ptable(process: Process) -> Result<(), &'static str> {
             }
         }
     }
-    Err("Process table is full")
+    Err("Process table full")
 }
 
 pub fn remove_process_from_ptable(pid: u64) -> Result<(), &'static str> {
-    unsafe {
-        for slot in PROCESS_TABLE.iter_mut() {
-            if let Some(proc) = slot {
-                if proc.pid == pid {
-                    *slot = None;
-                    return Ok(());
-                }
-            }
+    if let Some(idx) = find_index_by_id(pid) {
+        unsafe {
+            PROCESS_TABLE[idx] = None;
         }
+        return Ok(());
     }
     Err("Process not found")
 }
-
-/* 
-
-Below methods are deprecated. They only worked before paging was implemented.
-
-pub fn load_process(process_name: &str, parent_pid: u64, process_image: &'static [u8], process_addr: u64, entry_point: u64) {
-    unsafe {
-        core::ptr::copy_nonoverlapping(
-            process_image.as_ptr(),
-            process_addr as *mut u8,
-            process_image.len(),
-        );
-    }
-
-    // i got this entry point from the compiled init elf.
-    let stack_top: u64 = (process_addr + process_image.len() as u64 + 0x4000) & !0xf; // 16 byte aligned stack top
-    // right now i have just hardcoded some stack pointer for EL0
-
-    let process: Process = Process::new(process_name, parent_pid, entry_point, stack_top);
-
-    if let Err(e) = add_process_to_ptable(process) {
-        dprintln!("{}", e);
-        panic!("load_process: {}", e);
-    }
-
-}
-
-// Made a new one for "backwards compatibility" until it gets merged
-pub fn load_elf_process(process_name: &str, parent_pid: u64, bytes: &'static [u8]) {
-    let header = match Elf64Hdr::mkfrombytes(bytes) {
-        Some(h) => h,
-        None => {
-            dprintln!("load_elf_process: invalid elf file header '{}'",
-                      process_name);
-            return;
-        }
-    };
-
-    let mut loaded_any_segments = false;
-    let mut max_allocated_addr = 0u64;
-
-    let ph_size = core::mem::size_of::<Elf64ProgHdr>();
-    let start = header.phoff as usize;
-    let count = header.phnum as usize;
-
-    for i in 0..count {
-        let offset = start + (i * ph_size);
-        if offset + ph_size > bytes.len() {
-            break;
-        }
-
-        let ph = unsafe {
-            core::ptr::read_unaligned(bytes.as_ptr().add(offset) as *const Elf64ProgHdr)
-        };
-
-        if ph.r#type == PT_LOAD {
-            // Since paging is under construction, use the physical address
-            let dst = ph.phyaddr;
-
-            unsafe {
-                let src = bytes.as_ptr().add(ph.offset as usize);
-
-                // copy init code and data from elf to ram
-                core::ptr::copy_nonoverlapping(
-                    src,
-                    dst as *mut u8,
-                    ph.filesize as usize
-                );
-
-                if ph.memsize > ph.filesize {
-                    let bss_start = dst + ph.filesize;
-                    let bss_size = ph.memsize - ph.filesize;
-                    core::ptr::write_bytes(bss_start as *mut u8, 0, bss_size as usize);
-                }
-            }
-
-            // have segment_end used by the program to position stack
-            let segment_end = dst + ph.memsize;
-            if segment_end > max_allocated_addr {
-                max_allocated_addr = segment_end;
-            }
-
-            loaded_any_segments = true;
-        }
-    }
-    
-    if !loaded_any_segments {
-        dprintln!("load_elf_process: no loadable segment found in '{}'", process_name);
-        return;
-    }
-
-    let entry_point = header.entry;
-
-    // set stack top to just above the highest allocated program segment 16-byte aligned
-    let stack_top: u64 = (max_allocated_addr + 0x4000) & !0xf;
-
-    let process: Process = Process::new(process_name, parent_pid, entry_point, stack_top);
-    if let Err(e) = add_process_to_ptable(process) {
-        dprintln!("{}", e);
-        panic!("load_elf_process: {}", e);
-    }
-}
-
-*/

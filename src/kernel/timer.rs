@@ -9,13 +9,14 @@ pub struct PhysicalTimer;
 
 impl PhysicalTimer {
     pub fn init_irq(){
-        Interrupts::route_timer_interrupt(TimerInterruptSource::PhysicalNonSecure, InterruptRoute::IRQ);
+        Interrupts::route_timer_interrupt(TimerInterruptSource::PhysicalNonSecure,
+                                          InterruptRoute::IRQ);
     }
 
     // \TODO Physical timers IRQ could be triggered as secure or non secure.
-    // later you may want to add a argument here which lets you differentiate between
-    // the two. but for now we only use non secure world so it's fine to just
-    // handle it.
+    // later you may want to add a argument here which lets you differentiate
+    // between the two. but for now we only use non secure world so it's fine to
+    // just handle it.
     pub fn handle_irq(ctx: &mut ExceptionContext) {
         dprintln!("[P_TIMER] Physical Timer Interrupt Fired!");
         dprintln!("[P_TIMER] Calling Scheduler");

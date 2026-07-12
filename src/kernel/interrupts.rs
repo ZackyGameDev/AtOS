@@ -21,10 +21,10 @@ pub const CORE_0_FIQ_SRC:       *const u32 = (QA7_BASE + 0x70) as *const u32;
 #[repr(u8)]
 #[derive(Copy, Clone, Debug)]
 pub enum TimerInterruptSource {
-    Physical,
-    PhysicalNonSecure,
-    Hypervisor,
-    Virtual,
+    Physical = 1 << 0,
+    PhysicalNonSecure = 1 << 1,
+    Hypervisor = 1 << 2,
+    Virtual = 1 << 3,
 }
 
 #[repr(u8)]
@@ -70,12 +70,7 @@ impl Interrupts {
     }
 
     pub fn deroute_timer_interrupt(source: TimerInterruptSource) {
-        let mut disable_bit: u32 = match source {
-            TimerInterruptSource::Physical => 1 << 0,
-            TimerInterruptSource::PhysicalNonSecure => 1 << 1,
-            TimerInterruptSource::Hypervisor => 1 << 2,
-            TimerInterruptSource::Virtual => 1 << 3,
-        };
+        let mut disable_bit: u32 = source as u32;
 
         // disabling the FIQ as well
         disable_bit = disable_bit | (disable_bit << 4);
@@ -90,12 +85,7 @@ impl Interrupts {
         // first clearing the interrupt routes for the given source
         Self::deroute_timer_interrupt(source);
 
-        let mut enable_bit: u32 = match source {
-            TimerInterruptSource::Physical => 1 << 0,
-            TimerInterruptSource::PhysicalNonSecure => 1 << 1,
-            TimerInterruptSource::Hypervisor => 1 << 2,
-            TimerInterruptSource::Virtual => 1 << 3,
-        };
+        let mut enable_bit: u32 = source as u32;
 
         enable_bit = match route {
             InterruptRoute::IRQ => enable_bit,

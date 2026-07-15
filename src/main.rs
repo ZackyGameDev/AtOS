@@ -11,8 +11,8 @@ use kernel::paging::PageAllocator;
 use kernel::scheduler::Scheduler;
 use kernel::filesystem::FileSystem;
 
-// pub const DEBUG_PRINTS_ENABLED: bool = true;
-pub const DEBUG_PRINTS_ENABLED: bool = false;
+pub const DEBUG_PRINTS_ENABLED: bool = true;
+// pub const DEBUG_PRINTS_ENABLED: bool = false;
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {

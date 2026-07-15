@@ -4,6 +4,7 @@ use crate::{dprintln, println};
 use crate::kernel::syscalls;
 use crate::kernel::interrupts::{Interrupts, InterruptSource};
 use crate::kernel::timer::PhysicalTimer;
+use core::fmt;
 
 #[repr(u8)]
 #[derive(Copy, Clone, Debug)]
@@ -25,7 +26,7 @@ pub enum ExceptionSource {
 
 
 #[repr(C)]
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct ExceptionContext {
     pub etype: ExceptionType, // u8
     pub esource: ExceptionSource, // u8
@@ -48,6 +49,8 @@ impl ExceptionContext {
         self.sp_el0 = pctx.sp_el0;
         self.sp_el1 = pctx.sp_el1;
         self.ttbr0 = pctx.ttbr0;
+
+        dprintln!("[EXCEPTION CONTEXT] Updated from ProcessContext: {:?}", self);
     }
 }
 
@@ -137,6 +140,7 @@ fn handle_irq_exception(ctx: &mut ExceptionContext) -> () {
 // called by `exceptions.s`
 #[unsafe(no_mangle)]
 pub extern "C" fn handle_exception_el1(ctx: &mut ExceptionContext) {
+    dprintln!("[EXCEPTION] Exception detected! Type: {:?}, Source: {:?}", ctx.etype, ctx.esource);
 
     // if it came from EL0, then we need to update PCB of the process interrupted.
     if was_from_user_el0(ctx) {
@@ -156,4 +160,36 @@ pub extern "C" fn handle_exception_el1(ctx: &mut ExceptionContext) {
 
     // next process is scheduled in timer irq handler
 
+}
+
+
+
+/* DEBUG RELATED FORMATTINGS AND ASSISTANTS */
+impl fmt::Debug for ExceptionContext {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        // Helper to format the 31 registers into hex array format
+        struct HexArray<'a>(&'a [u64; 31]);
+        impl fmt::Debug for HexArray<'_> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                let mut list = f.debug_list();
+                for &val in self.0.iter() {
+                    list.entry(&format_args!("{:#X}", val));
+                }
+                list.finish()
+            }
+        }
+
+        f.debug_struct("ExceptionContext")
+            .field("etype", &self.etype)         // Assumes ExceptionType implements Debug
+            .field("esource", &self.esource)     // Assumes ExceptionSource implements Debug
+            .field("x", &HexArray(&self.x))
+            .field("elr", &format_args!("{:#X}", self.elr))
+            .field("spsr", &format_args!("{:#X}", self.spsr))
+            .field("esr", &format_args!("{:#X}", self.esr))
+            .field("far", &format_args!("{:#X}", self.far))
+            .field("sp_el0", &format_args!("{:#X}", self.sp_el0))
+            .field("sp_el1", &format_args!("{:#X}", self.sp_el1))
+            .field("ttbr0", &format_args!("{:#X}", self.ttbr0))
+            .finish()
+    }
 }

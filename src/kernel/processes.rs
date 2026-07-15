@@ -141,6 +141,9 @@ impl Process {
 
         let kernel_sp = KernelStack::alloc_stack(pid)?;
 
+        dprintln!("New process created with PID: {}, name: '{}', entry_point: {:#x}, user_sp: {:#x}, kernel_sp: {:#x}, ttbr0: {:#x}",
+                  pid, name, entry_point, user_sp, kernel_sp, ttbr0);
+
         Ok(Self { pid,
                name: name_bytes,
                state: ProcessState::Ready,

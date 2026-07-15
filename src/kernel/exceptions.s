@@ -89,11 +89,12 @@ b   el1032_serror
     mrs     x0, SP_EL0
     str     x0, [sp, #0x120]
 
-    mrs     x0, SP_EL1
-    str     x0, [sp, #0x128]
-
     mrs     x0, TTBR0_EL1
     str     x0, [sp, #0x130]
+
+    mov     x0, sp
+    add     x0, x0, #0x140 // we save the sp that must be restored after handling loading over.
+    str     x0, [sp, #0x128]
 .endm
 
 .macro LOAD_REG
@@ -106,9 +107,6 @@ b   el1032_serror
 
     ldr     x1, [sp, #0x120]
     msr     SP_EL0, x1
-
-    ldr     x1, [sp, #0x128]
-    msr     SP_EL1, x1
 
     ldr     x1, [sp, #0x130]
     msr     TTBR0_EL1, x1
@@ -130,6 +128,16 @@ b   el1032_serror
     ldp     x26, x27, [sp, #0xD8]
     ldp     x28, x29, [sp, #0xE8]
     ldr     x30,      [sp, #0xF8]
+
+    // now we can write back the sp value
+    msr     TPIDR_EL1, x1 // first backup x1 value to a useless register
+                         // which is unused in our kernel desgin
+
+    ldr     x1, [sp, #0x128]
+    mov     sp, x1
+
+    // restore x1 value
+    mrs     x1, TPIDR_EL1
 .endm
 
 // handling them
@@ -166,7 +174,7 @@ b   el1032_serror
     // the translation table may have changed
     RESET_TLB_CACHE
 
-    add     sp, sp, #0x140 // restore sp
+    // add     sp, sp, #0x140 // restore sp // not needed anymore since we load sp from saved context
 
     eret // handling completed :)
 .endm

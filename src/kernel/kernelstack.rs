@@ -4,10 +4,12 @@ execute syscalls. For that we are going to maintain the different process
 stacks, and allocate them in this module.
 */
 
+use core::ptr::{read_volatile, write_volatile};
+
 use crate::kernel::{processes::MAX_PROCESSES, spinlock::Spinlock};
 use crate::kernel::paging::PageAllocator;
 use crate::kernel::paging::PAGE_TABLE_KERNEL_L1;
-use crate::ttbr1_to_pa;
+use crate::{dprintln, ttbr1_to_pa};
 
 // Each process will have a kernel stack of 16KB (4 pages)
 pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to align with paging boundaries
@@ -89,8 +91,15 @@ pub fn duplicate_stack(src_pid: u64, dest_pid: u64) -> Result<u64, &'static str>
                         PageAllocator::alloc_page(page_va as usize, Some(ttbr1_to_pa!(core::ptr::addr_of!(PAGE_TABLE_KERNEL_L1)) as u64));
                     }
 
-                    let kernel_stack_top = kernel_stack_start + (KERNEL_STACK_SIZE as u64); // when allocating on stack, the sp is  
-                    return Ok(kernel_stack_top);                                                // decreased *first*, so no need to subtract 16
+
+                    let kernel_stack_top = kernel_stack_start + (KERNEL_STACK_SIZE as u64) - 0x10; // minus 16 for good measure; 
+                    
+                    // testing if page was allocated
+                    write_volatile((kernel_stack_top - 0x10) as *mut u64, 0x123456789ABCDEF0); // would cause page fault if page was not allocated properly
+                    let value = read_volatile((kernel_stack_top - 0x10) as *const u64); 
+                    dprintln!("[K_STACK ALLOC] Value read from kernel stack: {:<16X}", value);
+
+                    return Ok(kernel_stack_top);
                 }
             }
         }

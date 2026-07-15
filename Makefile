@@ -23,6 +23,7 @@ kernel8.img: build
 run:
 	$(QEMU) -M raspi3b -kernel kernel8.img -serial null -serial stdio  -display none
 
+.PHONY: debug
 debug:
 	$(QEMU) \
 		-M raspi3b \
@@ -31,6 +32,13 @@ debug:
 		-serial stdio \
 		-S \
 		-gdb tcp::1234
+
+# 	sleep 0.5
+	
+# 	gdb target/aarch64-unknown-none/debug/AtOS \
+# 		-ex "target remote :1234"
+
+# 	pkill qemu
 
 # Clean everything
 clean:

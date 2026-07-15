@@ -384,7 +384,7 @@ impl PageAllocator {
     // basically takes in a virtual address (from ttbr0 va range) and allocates a page for 
     // it in the given/loaded ttbr0 translation table. if the page is already allocated, it panics.
     // returns the physical address of the frame in which the page is allocated.
-    fn alloc_page(va: usize, ttbr0_val: Option<u64>) -> u64 {
+    pub fn alloc_page(va: usize, ttbr0_val: Option<u64>) -> u64 {
         let translation_table_pa = match ttbr0_val {
             Some(pa) => pa,
             None => {

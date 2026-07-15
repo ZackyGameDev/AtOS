@@ -48,5 +48,6 @@ SECTIONS
     _kernel_top = .;
 
     . = ALIGN(16);
-    _stack_top = . + 0x8000;
+    _stack_top = . + 0x4000; /* this is only really useful during the booting. 
+                              after which, the kernel uses process stacks*/
 }

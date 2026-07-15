@@ -36,6 +36,7 @@ pub struct ExceptionContext {
     pub esr: u64,
     pub far: u64,
     pub sp_el0: u64,
+    pub sp_el1: u64,
     pub ttbr0: u64,  
 }
 
@@ -44,7 +45,8 @@ impl ExceptionContext {
         self.x.copy_from_slice(&pctx.x);
         self.elr = pctx.elr;
         self.spsr = pctx.spsr;
-        self.sp_el0 = pctx.sp;
+        self.sp_el0 = pctx.sp_el0;
+        self.sp_el1 = pctx.sp_el1;
         self.ttbr0 = pctx.ttbr0;
     }
 }

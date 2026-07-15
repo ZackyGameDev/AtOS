@@ -2,10 +2,13 @@
 
 use core::default;
 
-use crate::{dprintln, print};
-use crate::kernel::exceptions::{self, ExceptionContext};
-use crate::kernel::paging::PageAllocator;
-use crate::kernel::spinlock::Spinlock;
+use crate::{dprintln, kernel, print};
+use crate::kernel::{
+    exceptions::{self, ExceptionContext},
+    paging::PageAllocator,
+    spinlock::Spinlock,
+    kernelstack::KernelStack,
+};
 
 pub const MAX_PROCESSES: usize = 50;
 pub const MAX_CPUS: usize = 1; // for now
@@ -88,19 +91,20 @@ pub enum BlockReason {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ProcessContext {
     pub x: [u64; 31],
-    pub sp: u64,
     pub elr: u64, // address to jump to when jumping to this process
     pub spsr: u64,
+    pub sp_el0: u64,
+    pub sp_el1: u64,
     pub ttbr0: u64, // translation table base address for this process's user space
 }
 
 impl ProcessContext {
-    pub fn new(entry_point: u64, sp: u64, ttbr0: u64) -> Self {
-        Self { elr: entry_point, sp, ttbr0, ..Default::default() }
+    pub fn new(entry_point: u64, user_sp: u64, kernel_sp: u64, ttbr0: u64) -> Self {
+        Self { elr: entry_point, sp_el0: user_sp, sp_el1: kernel_sp, ttbr0, ..Default::default() }
     }
 
     pub fn from_ectx(ctx: &ExceptionContext) -> Self {
-        let mut pctx = Self::new(ctx.elr, ctx.sp_el0, ctx.ttbr0);
+        let mut pctx = Self::new(ctx.elr, ctx.sp_el0, ctx.sp_el1, ctx.ttbr0);
         pctx.x.copy_from_slice(&ctx.x);
         pctx.spsr = ctx.spsr;
         pctx
@@ -122,7 +126,7 @@ pub struct Process {
 }
 
 impl Process {
-    pub fn new(name: &str, parent_pid: u64, entry_point: u64, sp: u64, ttbr0: u64) -> Self {
+    pub fn new(name: &str, parent_pid: u64, entry_point: u64, user_sp: u64, ttbr0: u64) -> Result<Self, &'static str> {
         let pid = unsafe {
             let pid = NEXT_PID;
             NEXT_PID += 1;
@@ -135,14 +139,16 @@ impl Process {
         let len = core::cmp::min(bytes.len(), 32);
         name_bytes[..len].copy_from_slice(&bytes[..len]);
 
-        Self { pid,
+        let kernel_sp = KernelStack::alloc_stack(pid)?;
+
+        Ok(Self { pid,
                name: name_bytes,
                state: ProcessState::Ready,
                block_reason: None,
                parent_pid,
-               pctx: ProcessContext::new(entry_point, sp, ttbr0),
+               pctx: ProcessContext::new(entry_point, user_sp, kernel_sp, ttbr0),
                chan: 0,
-               exit_code: 0, }
+               exit_code: 0, })
     }
 
     // very self explanatory. this function loads an elf file into memory and creates a process for it.
@@ -150,11 +156,19 @@ impl Process {
     pub fn spawn_from_elf(name: &str, parent_pid: u64, bytes: &'static [u8]) -> Result<u64, &'static str> {
         let (entry_point, stack_top, ttbr0) = PageAllocator::load_elf(bytes)?;
 
-        let process: Process = Process::new(name, parent_pid, entry_point, stack_top, ttbr0);
+        let process = match Process::new(name, parent_pid, entry_point, stack_top, ttbr0) {
+            Ok(process) => process,
+            Err(e) => {
+                PageAllocator::free_page_table(Some(ttbr0)); // free page table of failed process.
+                return Err(e)
+            }
+        };
+
         if let Err(e) = add_process_to_ptable(process) {
-            dprintln!("{}", e);
-            panic!("load_elf_process: {}", e);
+            PageAllocator::free_page_table(Some(ttbr0)); // free page table of failed process.
+            return Err(e)
         }
+
         Ok(process.pid)
     }
 
@@ -192,8 +206,12 @@ impl Process {
         // Free the old page table
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));
 
+        // clear stack
+        KernelStack::free_stack(self.pid)?;
+        let new_kernel_sp = KernelStack::alloc_stack(self.pid)?; // allocate a new stack for the process
+
         // Update the process context with the new entry point, stack pointer, and page table
-        self.pctx = ProcessContext::new(entry_point, stack_top, new_ttbr0);
+        self.pctx = ProcessContext::new(entry_point, stack_top, new_kernel_sp, new_ttbr0);
 
         Ok(())
     }

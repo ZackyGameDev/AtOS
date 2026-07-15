@@ -183,9 +183,12 @@ impl Process {
             NEXT_PID += 1;
             pid
         };
+        
+        let new_kernel_sp = KernelStack::duplicate_stack(self.pid, new_pid, self.pctx.sp_el1)?;
 
         let mut new_pctx = self.pctx;
         new_pctx.ttbr0 = new_ttbr0;
+        new_pctx.sp_el1 = new_kernel_sp;
 
         dprintln!("[PROC_FORK] parent process is: {:?}", self);        
         dprintln!("[PROC_FORK] child process context will be: {:?}", new_pctx);

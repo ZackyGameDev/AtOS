@@ -373,12 +373,47 @@ impl PageAllocator {
                 if level < 3 {
                     Self::do_free_table_recursive(entry & 0x0000_FFFF_FFFF_F000, level + 1);
                 } else {
+                    unsafe { (*table).entry[i] = 0; } // invalidate the entry
                     Self::add_free_frame(ttbr1_to_va!(entry & 0x0000_FFFF_FFFF_F000));
                 }
             }
         }
         
         Self::add_free_frame(ttbr1_to_va!(ttpa));        
+    }
+
+    // this one basically takes in virtual address of a frame and then 
+    // frees it by first invalidating the page table entry by zeroing it,
+    // and then adding the frame itself to the free frame list.
+    pub fn free_page(va_in_page: usize, ttbr0_val: Option<u64>) {
+        let translation_table_pa = match ttbr0_val {
+            Some(pa) => pa,
+            None => {
+                let mut ttbr0: u64;
+                unsafe { core::arch::asm!("mrs {}, ttbr0_el1", out(reg) ttbr0) };
+                ttbr0 & 0x0000_FFFF_FFFF_F000
+            }
+        };
+
+        let l1_i = (va_in_page >> 30) & 0x1FF;
+        let l2_i = (va_in_page >> 21) & 0x1FF;
+        let l3_i = (va_in_page >> 12) & 0x1FF;
+
+        unsafe {
+            let l1 = ttbr1_to_va!(translation_table_pa) as *mut PageTable;
+            if (*l1).entry[l1_i] & 0b11 != 0b11 { return; } // invalid entry
+            let l2 = ttbr1_to_va!((*l1).entry[l1_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
+            if (*l2).entry[l2_i] & 0b11 != 0b11 { return; } // invalid entry
+            let l3 = ttbr1_to_va!((*l2).entry[l2_i] & 0x0000_FFFF_FFFF_F000) as *mut PageTable;
+            let l3_entry = (*l3).entry[l3_i];
+            if l3_entry & 0b11 != 0b11 { return; } // invalid entry
+
+            // Invalidate the page table entry
+            (*l3).entry[l3_i] = 0;
+
+            // Add the frame to the free frame list
+            Self::add_free_frame(ttbr1_to_va!(l3_entry & 0x0000_FFFF_FFFF_F000));
+        }
     }
 
     // basically takes in a virtual address (from ttbr0 va range) and allocates a page for 

@@ -37,7 +37,8 @@ pub extern "C" fn _rust_main() -> ! {
     PhysicalTimer::init_irq();
     Interrupts::daif_unmask_all();
     PageAllocator::init_frames(stack_top_addr + 0x1000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
-    
+    let kernel_root_sp = KernelStack::alloc_stack(0);
+
     show_welcome_ascii();
     println!("Welcome, to AtOS... \nKernel is running in EL{}.", get_current_el());
 
@@ -74,6 +75,8 @@ pub fn the_end() -> ! {
 }
 
 use core::panic::PanicInfo;
+
+use crate::kernel::kernelstack::KernelStack;
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {

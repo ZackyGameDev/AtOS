@@ -7,9 +7,9 @@ stacks, and allocate them in this module.
 use core::ptr::{read_volatile, write_volatile};
 
 use crate::kernel::{processes::MAX_PROCESSES, spinlock::Spinlock};
-use crate::kernel::paging::PageAllocator;
+use crate::kernel::paging::{PageAllocator, PageTable};
 use crate::kernel::paging::PAGE_TABLE_KERNEL_L1;
-use crate::{dprintln, ttbr1_to_pa};
+use crate::{dprintln, ttbr1_to_pa, ttbr1_to_va};
 
 // Each process will have a kernel stack of 16KB (4 pages)
 pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to align with paging boundaries
@@ -26,10 +26,11 @@ pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to ali
 // we only now need to keep track of which of those are allocated 
 // and which are not being used.
 
-pub const KERNEL_STACK_REGION_START: u64 = 0xFFFF_FF80_8000_0000;
+pub const KERNEL_STACK_REGION_START: u64 = 0xFFFF_FF80_8000_0000 + 0x4000; // first 0x4000 bytes are served for kernel stack
+                                                                          // which will be treated like process 0's kernel stack. 
 
 pub static mut KERNEL_STACKS_ALLOCATED: [Option<u64>; MAX_PROCESSES] = [None; MAX_PROCESSES];
-pub static KERNEL_STACK_TABLE_LOCK: Spinlock = Spinlock::new("kernel_stack_table");
+// pub static KERNEL_STACK_TABLE_LOCK: Spinlock = Spinlock::new("kernel_stack_table");
 
 // here None will represent that the stack region is free. Option<u64> will represent the pid of
 // the process currently using that stack region. The index of the array will represent the stack number.
@@ -38,27 +39,24 @@ pub struct KernelStack;
 
 impl KernelStack {
 
-pub fn duplicate_stack(src_pid: u64, dest_pid: u64) -> Result<u64, &'static str> {
-        let src_stack_index = Self::get_stack_index(src_pid).ok_or("Source process does not have a kernel stack allocated")?;
-        let dest_stack_index = Self::get_stack_index(dest_pid).ok_or("Destination process does not have a kernel stack allocated")?;
+    pub fn duplicate_stack(src_pid: u64, dest_pid: u64, src_sp_el1: u64) -> Result<u64, &'static str> {
+        let dst_stack_top = match Self::get_stack_top(dest_pid) {
+            Ok(top) => top,
+            Err(_) => Self::alloc_stack(dest_pid)?,
+        };
 
-        let src_stack_start = KERNEL_STACK_REGION_START + (src_stack_index as u64) * (KERNEL_STACK_SIZE as u64);
-        let dest_stack_start = KERNEL_STACK_REGION_START + (dest_stack_index as u64) * (KERNEL_STACK_SIZE as u64);
+        let active_size = Self::get_stack_usage(src_pid, src_sp_el1)?;
+        let dst_sp_el1 = dst_stack_top - (active_size as u64);
 
-        // Calculate the starting offset of the active stack area (skipping page 0)
-        let active_stack_offset = 4096;
-        let active_stack_size = KERNEL_STACK_SIZE - active_stack_offset;
-
-        // Copy ONLY the mapped pages of the source stack to the destination stack
         unsafe {
             core::ptr::copy_nonoverlapping(
-                (src_stack_start + active_stack_offset as u64) as *const u8,
-                (dest_stack_start + active_stack_offset as u64) as *mut u8,
-                active_stack_size,
+                src_sp_el1 as *const u8,
+                dst_sp_el1 as *mut u8,
+                active_size,
             );
         }
 
-        Ok(dest_stack_start + (KERNEL_STACK_SIZE as u64)) // Return the top of the destination stack
+        Ok(dst_sp_el1)
     }
 
     pub fn get_stack_index(pid: u64) -> Option<usize> {
@@ -72,10 +70,27 @@ pub fn duplicate_stack(src_pid: u64, dest_pid: u64) -> Result<u64, &'static str>
         None
     }
 
+    pub fn get_stack_usage(pid: u64, sp_el1_val: u64) -> Result<usize, &'static str> {
+        let stack_top = Self::get_stack_top(pid)?;
+
+        if sp_el1_val > stack_top {
+            return Err("[get_stack_usage] kernel stack underflow! (how did this happen bro)");
+        }
+
+        Ok((stack_top - sp_el1_val) as usize)
+    }
+
+    pub fn get_stack_top(pid: u64) -> Result<u64, &'static str> {
+        let index = Self::get_stack_index(pid).ok_or("[get_stack_top] Process does not have a kernel stack allocated")?;
+        let stack_start = KERNEL_STACK_REGION_START + (index as u64) * (KERNEL_STACK_SIZE as u64);
+        Ok(stack_start + (KERNEL_STACK_SIZE as u64)) // Return the top of the stack
+    }
+
     // the result can be used as sp_el1
     pub fn alloc_stack(pid: u64) -> Result<u64, &'static str> {
+        dprintln!("[alloc_stack] Allocating kernel stack for pid {}", pid);
         if Self::get_stack_index(pid).is_some() {
-            return Err("Process already has a kernel stack allocated");
+            return Err("[alloc_stack] Process already has a kernel stack allocated");
         }
 
         for i in 0..MAX_PROCESSES {
@@ -92,37 +107,40 @@ pub fn duplicate_stack(src_pid: u64, dest_pid: u64) -> Result<u64, &'static str>
                     }
 
 
-                    let kernel_stack_top = kernel_stack_start + (KERNEL_STACK_SIZE as u64) - 0x10; // minus 16 for good measure; 
+                    let kernel_stack_top = kernel_stack_start + (KERNEL_STACK_SIZE as u64); 
                     
                     // testing if page was allocated
                     write_volatile((kernel_stack_top - 0x10) as *mut u64, 0x123456789ABCDEF0); // would cause page fault if page was not allocated properly
                     let value = read_volatile((kernel_stack_top - 0x10) as *const u64); 
-                    dprintln!("[K_STACK ALLOC] Value read from kernel stack: {:<16X}", value);
+                    dprintln!("[alloc_stack] Value read from kernel stack: {:<16X}", value);
 
+                    dprintln!("[alloc_stack] Allocated kernel stack for pid {} at VA: {:<16X}", pid, kernel_stack_start);
                     return Ok(kernel_stack_top);
                 }
             }
         }
-        Err("No available kernel stacks")
+        Err("[alloc_stack] No available kernel stacks")
     }
 
     pub fn free_stack(pid: u64) -> Result<(), &'static str> {
-        for i in 0..MAX_PROCESSES {
-            unsafe {
-                if KERNEL_STACKS_ALLOCATED[i] == Some(pid) {
-                    let kernel_stack_start = KERNEL_STACK_REGION_START + (i as u64) * (KERNEL_STACK_SIZE as u64);
-                    let total_pages = KERNEL_STACK_SIZE as u64 / 4096;
+        let i = Self::get_stack_index(pid).ok_or({
+            dprintln!("[free_stack] Process {} does not have a kernel stack allocated", pid);
+            "[free_stack] Process does not have a kernel stack allocated"
+        })?;
+        unsafe {
+            let kernel_stack_start = KERNEL_STACK_REGION_START + (i as u64) * (KERNEL_STACK_SIZE as u64);
+            let total_pages = KERNEL_STACK_SIZE as u64 / 4096;
 
-                    for page_i in 1..total_pages {
-                        let page_va = kernel_stack_start + (page_i * 4096);
-                        PageAllocator::add_free_frame(page_va as usize);
-                    }
+            let ttbr1_val = &raw const PAGE_TABLE_KERNEL_L1 as *const PageTable as u64;
 
-                    KERNEL_STACKS_ALLOCATED[i] = None;
-                    return Ok(());
-                }
+            for page_i in 1..total_pages {
+                let page_va = kernel_stack_start + (page_i * 4096);
+                PageAllocator::free_page(page_va as usize, Some(ttbr1_val)); 
             }
+
+            KERNEL_STACKS_ALLOCATED[i] = None;
+            dprintln!("[free_stack] Freed kernel stack for pid {} at VA: {:<16X}", pid, kernel_stack_start);
+            Ok(())
         }
-        Err("No active kernel stack found for the given PID")
     }
 }

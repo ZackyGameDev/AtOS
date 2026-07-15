@@ -117,7 +117,7 @@ macro_rules! println {
 macro_rules! dprintln {
     ($($arg:tt)*) => {
         if $crate::DEBUG_PRINTS_ENABLED {
-            $crate::println!($($arg)*);
+            $crate::println!("      {}", format_args!($($arg)*));
         }
     };
 }

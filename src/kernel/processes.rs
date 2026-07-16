@@ -176,6 +176,9 @@ impl Process {
     }
 
     pub fn fork(&self) -> Result<Process, &'static str> {
+
+        dprintln!("[PROC_FORK] duplicating process pid {}, name \"{:?}\"", self.pid, self.name);
+
         let new_ttbr0 = PageAllocator::duplicate_va_space(Some(self.pctx.ttbr0))?;
 
         let new_pid = unsafe {
@@ -183,6 +186,8 @@ impl Process {
             NEXT_PID += 1;
             pid
         };
+
+        dprintln!("[PROC_FORK] now kernel dupe pid {}, name \"{:?}\" into new process pid {}", self.pid, self.name, new_pid);
         
         let new_kernel_sp = KernelStack::duplicate_stack(self.pid, new_pid, self.pctx.sp_el1)?;
 

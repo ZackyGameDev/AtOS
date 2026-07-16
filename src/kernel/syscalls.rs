@@ -121,6 +121,8 @@ fn sys_fork(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
         }
     };
 
+    dprintln!("[SYS_FORK] Forking process pid {}, name \"{:?}\"", current_process.pid, current_process.name);
+
     let mut child = current_process.fork()?;
 
     child.pctx.x[0] = 0; // child process returns 0

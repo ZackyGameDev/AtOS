@@ -20,7 +20,7 @@ pub fn main() {
 	println!("Error: Read 0 bytes from stdin").unwrap();
     }
 
-    loop {core::hint::spin_loop();}
+    // loop {core::hint::spin_loop();}
 }
 
 entry!(main);

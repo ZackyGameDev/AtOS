@@ -122,3 +122,12 @@ macro_rules! dprintln {
     };
 }
 
+#[macro_export]
+macro_rules! mprintln {
+    ($($arg:tt)*) => {
+        if unsafe { $crate::DEBUG_PRINTS_ENABLED_MMU } {
+            $crate::println!("      {}", format_args!($($arg)*));
+        }
+    };
+}
+

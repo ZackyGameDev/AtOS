@@ -29,7 +29,7 @@ as the physical RAM exists.
 
 #![allow(static_mut_refs)]
 
-use crate::{ttbr1_to_pa, ttbr1_to_va, dprintln};
+use crate::{ttbr1_to_pa, ttbr1_to_va, mprintln};
 use crate::kernel::elf::{Elf64Hdr, Elf64ProgHdr, PT_LOAD};
 
 // TCR_EL1 register values for 4KB granule, 36-bit physical address space, inner shareable, write-back write-allocate cacheable memory
@@ -117,7 +117,7 @@ impl PageAllocator {
         let header = match Elf64Hdr::mkfrombytes(bytes) {
             Some(h) => h,
             None => {
-                dprintln!("load_elf_process: invalid elf file header");
+                mprintln!("load_elf_process: invalid elf file header");
                 return Err("Invalid ELF file header");
             }
         };
@@ -215,7 +215,7 @@ impl PageAllocator {
         }
         
         if !loaded_any_segments {
-            dprintln!("load_elf_process: no loadable segment found in elf");
+            mprintln!("load_elf_process: no loadable segment found in elf");
             return Err("No loadable segments found in ELF file");
         }
 
@@ -290,10 +290,14 @@ impl PageAllocator {
             None => return Err("No more memory to allocate new translation table for child process"),
         };
 
+        mprintln!("[PAGE_ALLOC] Duplicating va space from ttbr0 {:#x} to new ttbr0 {:#x}", src_translation_table_pa, dst_translation_table_pa);
+
         unsafe {
             let dst_l1 = ttbr1_to_va!(dst_translation_table_pa) as *mut PageTable;
             (*dst_l1).entry.fill(0);
         }
+
+        mprintln!("[PAGE_ALLOC] Starting recursive duplication of page tables...");
 
         if let Err(e) = Self::do_duplicate_table_recursive(src_translation_table_pa, dst_translation_table_pa, 1) {
             // Rollback: If we ran out of memory halfway through, free everything we've allocated so far
@@ -312,6 +316,8 @@ impl PageAllocator {
             return Ok(());
         }
 
+        mprintln!("[PAGE_ALLOC] Duplicating page table at level {}: src_ttpa {:#x}, dst_ttpa {:#x}", level, src_ttpa, dst_ttpa);
+
         let src_table = ttbr1_to_va!(src_ttpa) as *const PageTable;
         let dst_table = ttbr1_to_va!(dst_ttpa) as *mut PageTable;
 
@@ -328,6 +334,8 @@ impl PageAllocator {
                         Some(pa) => pa as u64,
                         None => return Err("Out of memory: failed to allocate intermediate page table"),
                     };
+
+                    mprintln!("[PAGE_ALLOC] Allocated new page table at level {}: new_table_pa {:#x} for src_entry {:#x}", level, new_table_pa, src_entry);
 
                     unsafe {
                         (*(ttbr1_to_va!(new_table_pa) as *mut PageTable)).entry.fill(0);
@@ -375,6 +383,8 @@ impl PageAllocator {
             return;
         }
 
+        mprintln!("[PAGE_ALLOC] Freeing page table at level {}: ttpa {:#x}", level, ttpa);
+
         let table = ttbr1_to_va!(ttpa) as *mut PageTable;
         for i in 0..PAGE_ENTRIES {
             let entry = unsafe { (*table).entry[i] };
@@ -421,7 +431,14 @@ impl PageAllocator {
             (*l3).entry[l3_i] = 0;
 
             // Add the frame to the free frame list
+            Self::zero_frame(ttbr1_to_va!(l3_entry & 0x0000_FFFF_FFFF_F000));
             Self::add_free_frame(ttbr1_to_va!(l3_entry & 0x0000_FFFF_FFFF_F000));
+        }
+    }
+
+    fn zero_frame(frame_va: usize) {
+        unsafe {
+            core::ptr::write_bytes(frame_va as *mut u8, 0, PAGE_SIZE);
         }
     }
 
@@ -507,6 +524,7 @@ impl PageAllocator {
     pub fn add_free_frame(va_in_frame: usize) -> () {
         let free_frame_va = va_in_frame & !(PAGE_SIZE - 1);
         let free_frame = free_frame_va as *mut FreeFrame;
+        mprintln!("[PAGE_ALLOC] Adding free frame at va: {:#x}", free_frame_va);
         unsafe { (*free_frame).next = FREE_FRAME_LIST;
                  FREE_FRAME_LIST = Some(free_frame) };
     }

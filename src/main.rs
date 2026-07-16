@@ -10,8 +10,11 @@ use kernel::paging::PageAllocator;
 use kernel::scheduler::Scheduler;
 use kernel::filesystem::FileSystem;
 
-// pub const DEBUG_PRINTS_ENABLED: bool = true;
-pub const DEBUG_PRINTS_ENABLED: bool = false;
+// pub const DEBUG_PRINTS_ENABLED_MMU: bool = true;
+pub static mut DEBUG_PRINTS_ENABLED_MMU: bool = false;
+
+pub const DEBUG_PRINTS_ENABLED: bool = true;
+// pub const DEBUG_PRINTS_ENABLED: bool = false;
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {
@@ -40,6 +43,8 @@ pub extern "C" fn _rust_main() -> ! {
     // let kernel_root_sp = KernelStack::alloc_stack(0); // this is currently commented because it ends up being unused. But 
                                                         // there may be need for it later. so it is still here as a hint.
     
+    unsafe { DEBUG_PRINTS_ENABLED_MMU = true; }    
+
     show_welcome_ascii();
     println!("\nWelcome, to AtOS...\n");
 

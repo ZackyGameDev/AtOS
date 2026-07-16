@@ -6,10 +6,11 @@ stacks, and allocate them in this module.
 
 use core::ptr::{read_volatile, write_volatile};
 
+use crate::kernel::scheduler::Scheduler;
 use crate::kernel::{processes::MAX_PROCESSES, spinlock::Spinlock};
 use crate::kernel::paging::{PageAllocator, PageTable};
 use crate::kernel::paging::PAGE_TABLE_KERNEL_L1;
-use crate::{dprintln, ttbr1_to_pa, ttbr1_to_va};
+use crate::{dprintln, ttbr1_to_pa};
 
 // Each process will have a kernel stack of 16KB (4 pages)
 pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to align with paging boundaries
@@ -28,8 +29,15 @@ pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to ali
 
 pub const KERNEL_STACK_REGION_START: u64 = 0xFFFF_FF80_8000_0000 + 0x4000; // first 0x4000 bytes are served for kernel stack
                                                                           // which will be treated like process 0's kernel stack. 
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum StackState {
+    Allocated(u64),
+    QueuedToFree(u64),
+    Free,
+}
 
-pub static mut KERNEL_STACKS_ALLOCATED: [Option<u64>; MAX_PROCESSES] = [None; MAX_PROCESSES];
+pub static mut KERNEL_STACKS_ALLOCATED: [StackState; MAX_PROCESSES] = [StackState::Free; MAX_PROCESSES]; 
+
 // pub static KERNEL_STACK_TABLE_LOCK: Spinlock = Spinlock::new("kernel_stack_table");
 
 // here None will represent that the stack region is free. Option<u64> will represent the pid of
@@ -59,10 +67,10 @@ impl KernelStack {
         Ok(dst_sp_el1)
     }
 
-    pub fn get_stack_index(pid: u64) -> Option<usize> {
+    pub fn get_active_stack_index(pid: u64) -> Option<usize> {
         for i in 0..MAX_PROCESSES {
             unsafe {
-                if KERNEL_STACKS_ALLOCATED[i] == Some(pid) {
+                if KERNEL_STACKS_ALLOCATED[i] == StackState::Allocated(pid) {
                     return Some(i);
                 }
             }
@@ -81,22 +89,30 @@ impl KernelStack {
     }
 
     pub fn get_stack_top(pid: u64) -> Result<u64, &'static str> {
-        let index = Self::get_stack_index(pid).ok_or("[get_stack_top] Process does not have a kernel stack allocated")?;
+        let index = Self::get_active_stack_index(pid).ok_or("[get_stack_top] Process does not have a kernel stack allocated")?;
         let stack_start = KERNEL_STACK_REGION_START + (index as u64) * (KERNEL_STACK_SIZE as u64);
         Ok(stack_start + (KERNEL_STACK_SIZE as u64)) // Return the top of the stack
+    }
+
+    pub fn queue_stack_to_free(pid: u64) -> Result<(), &'static str> {
+        let index = Self::get_active_stack_index(pid).ok_or("[queue_stack_to_free] Process does not have a kernel stack allocated")?;
+        unsafe {
+            KERNEL_STACKS_ALLOCATED[index] = StackState::QueuedToFree(pid);
+        }
+        Ok(())
     }
 
     // the result can be used as sp_el1
     pub fn alloc_stack(pid: u64) -> Result<u64, &'static str> {
         dprintln!("[alloc_stack] Allocating kernel stack for pid {}", pid);
-        if Self::get_stack_index(pid).is_some() {
+        if Self::get_active_stack_index(pid).is_some() {
             return Err("[alloc_stack] Process already has a kernel stack allocated");
         }
 
         for i in 0..MAX_PROCESSES {
             unsafe {
-                if KERNEL_STACKS_ALLOCATED[i].is_none() {
-                    KERNEL_STACKS_ALLOCATED[i] = Some(pid);
+                if KERNEL_STACKS_ALLOCATED[i] == StackState::Free {
+                    KERNEL_STACKS_ALLOCATED[i] = StackState::Allocated(pid);
                     let kernel_stack_start = KERNEL_STACK_REGION_START + (i as u64) * (KERNEL_STACK_SIZE as u64);
 
                     let total_pages = KERNEL_STACK_SIZE as u64 / 4096;
@@ -105,7 +121,6 @@ impl KernelStack {
                         let page_va = kernel_stack_start + (page_idx * 4096);
                         PageAllocator::alloc_page(page_va as usize, Some(ttbr1_to_pa!(core::ptr::addr_of!(PAGE_TABLE_KERNEL_L1)) as u64));
                     }
-
 
                     let kernel_stack_top = kernel_stack_start + (KERNEL_STACK_SIZE as u64); 
                     
@@ -122,25 +137,42 @@ impl KernelStack {
         Err("[alloc_stack] No available kernel stacks")
     }
 
-    pub fn free_stack(pid: u64) -> Result<(), &'static str> {
-        let i = Self::get_stack_index(pid).ok_or({
-            dprintln!("[free_stack] Process {} does not have a kernel stack allocated", pid);
-            "[free_stack] Process does not have a kernel stack allocated"
-        })?;
-        unsafe {
-            let kernel_stack_start = KERNEL_STACK_REGION_START + (i as u64) * (KERNEL_STACK_SIZE as u64);
-            let total_pages = KERNEL_STACK_SIZE as u64 / 4096;
-
-            let ttbr1_val = &raw const PAGE_TABLE_KERNEL_L1 as *const PageTable as u64;
-
-            for page_i in 1..total_pages {
-                let page_va = kernel_stack_start + (page_i * 4096);
-                PageAllocator::free_page(page_va as usize, Some(ttbr1_val)); 
+    pub fn free_queued_stacks() {
+        for i in 0..MAX_PROCESSES {
+            unsafe {
+                if let StackState::QueuedToFree(pid) = KERNEL_STACKS_ALLOCATED[i] {
+                    if pid == Scheduler::get_current_process().unwrap().pid {
+                        dprintln!("[free_queued_stacks] Cannot free kernel stack for pid {} as it is the current process", pid);
+                        continue;
+                    }
+                    match Self::free_stack(i) {
+                        Ok(_) => dprintln!("[free_queued_stacks] Freed kernel stack for pid {}", pid),
+                        Err(e) => dprintln!("[free_queued_stacks] Error freeing kernel stack for pid {}: {}", pid, e),
+                    }
+                }
             }
+        }
+    }
 
-            KERNEL_STACKS_ALLOCATED[i] = None;
-            dprintln!("[free_stack] Freed kernel stack for pid {} at VA: {:<16X}", pid, kernel_stack_start);
-            Ok(())
+    pub fn free_stack(stack_i: usize) -> Result<(), &'static str> {
+        unsafe {
+            if let StackState::QueuedToFree(pid) = KERNEL_STACKS_ALLOCATED[stack_i] {
+                let kernel_stack_start = KERNEL_STACK_REGION_START + (stack_i as u64) * (KERNEL_STACK_SIZE as u64);
+                let total_pages = KERNEL_STACK_SIZE as u64 / 4096;
+
+                let ttbr1_val = &raw const PAGE_TABLE_KERNEL_L1 as *const PageTable as u64;
+
+                for page_i in 1..total_pages {
+                    let page_va = kernel_stack_start + (page_i * 4096);
+                    PageAllocator::free_page(page_va as usize, Some(ttbr1_val)); 
+                }
+
+                KERNEL_STACKS_ALLOCATED[stack_i] = StackState::Free;
+                dprintln!("[free_stack] Freed kernel stack for pid {} at VA: {:<16X}", pid, kernel_stack_start);
+                Ok(())
+            } else {
+                Err("[free_stack] Stack is not queued to free")
+            }
         }
     }
 }

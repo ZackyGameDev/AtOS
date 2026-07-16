@@ -1,3 +1,4 @@
+use crate::kernel::kernelstack::KernelStack;
 use crate::kernel::processes::ProcessContext;
 use crate::kernel::scheduler::Scheduler;
 use crate::{dprintln, println};
@@ -145,7 +146,7 @@ pub extern "C" fn handle_exception_el1(ctx: &mut ExceptionContext) {
     // if it came from EL0, then we need to update PCB of the process interrupted.
     if was_from_user_el0(ctx) {
         let new_pctx = ProcessContext::from_ectx(ctx);
-
+        KernelStack::free_queued_stacks();
         Scheduler::update_last_running_pctx(&new_pctx);
     }
 
@@ -180,8 +181,8 @@ impl fmt::Debug for ExceptionContext {
         }
 
         f.debug_struct("ExceptionContext")
-            .field("etype", &self.etype)         // Assumes ExceptionType implements Debug
-            .field("esource", &self.esource)     // Assumes ExceptionSource implements Debug
+            .field("etype", &self.etype)
+            .field("esource", &self.esource)
             .field("x", &HexArray(&self.x))
             .field("elr", &format_args!("{:#X}", self.elr))
             .field("spsr", &format_args!("{:#X}", self.spsr))

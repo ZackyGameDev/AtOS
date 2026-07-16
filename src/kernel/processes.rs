@@ -213,7 +213,7 @@ impl Process {
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));
 
         // clear stack
-        KernelStack::free_stack(self.pid)?;
+        KernelStack::queue_stack_to_free(self.pid)?;
         let new_kernel_sp = KernelStack::alloc_stack(self.pid)?; // allocate a new stack for the process
 
         // Update the process context with the new entry point, stack pointer, and page table
@@ -229,6 +229,7 @@ impl Process {
 
     pub fn terminate(&mut self, exit_code: i64) {
         self.exit_code = exit_code;
+        KernelStack::queue_stack_to_free(self.pid).unwrap();
         self.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));
     }

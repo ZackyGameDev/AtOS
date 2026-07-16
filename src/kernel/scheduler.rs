@@ -9,7 +9,7 @@ use crate::dprintln;
 use crate::the_end;
 
 pub static mut CURRENT_PROCESS: usize = 1; // last scheduled process index in process table
-pub const TIMESLICE_MILISECONDS: u64 = 20;
+pub const TIMESLICE_MILISECONDS: u64 = 9;
 
 // we implement xv6 similar round robin
 pub struct Scheduler;

@@ -431,14 +431,7 @@ impl PageAllocator {
             (*l3).entry[l3_i] = 0;
 
             // Add the frame to the free frame list
-            Self::zero_frame(ttbr1_to_va!(l3_entry & 0x0000_FFFF_FFFF_F000));
             Self::add_free_frame(ttbr1_to_va!(l3_entry & 0x0000_FFFF_FFFF_F000));
-        }
-    }
-
-    fn zero_frame(frame_va: usize) {
-        unsafe {
-            core::ptr::write_bytes(frame_va as *mut u8, 0, PAGE_SIZE);
         }
     }
 
@@ -521,9 +514,16 @@ impl PageAllocator {
         }
     }
 
+    fn zero_frame(frame_va: usize) {
+        unsafe {
+            core::ptr::write_bytes(frame_va as *mut u8, 0, PAGE_SIZE);
+        }
+    }
+    
     pub fn add_free_frame(va_in_frame: usize) -> () {
         let free_frame_va = va_in_frame & !(PAGE_SIZE - 1);
         let free_frame = free_frame_va as *mut FreeFrame;
+        Self::zero_frame(free_frame_va);
         mprintln!("[PAGE_ALLOC] Adding free frame at va: {:#x}", free_frame_va);
         unsafe { (*free_frame).next = FREE_FRAME_LIST;
                  FREE_FRAME_LIST = Some(free_frame) };

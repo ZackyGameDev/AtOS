@@ -221,10 +221,19 @@ impl PageAllocator {
 
         let entry_point = header.entry;
         // set stack top to just above the highest allocated program segment 16-byte aligned
-        let stack_top: u64 = (max_allocated_addr + 0x4000) & !0xf;
+        let stack_top: u64 = (max_allocated_addr + 0x10000) & !0xf; 
 
-        Self::alloc_page(stack_top as usize, Some(ttbr0));
-        Self::alloc_page(stack_top as usize - PAGE_SIZE, Some(ttbr0)); // allocate 2 pages for stack right now \TODO make this dynamic 
+        // giving the user stack 8 pages. with unallocated gaurd page between stack area and everythign else.
+
+        for i in 0..8 {
+            let stack_page_va = stack_top - (i * 4096) - 1;
+            Self::alloc_page(stack_page_va as usize, Some(ttbr0));
+        }
+
+
+
+        // Self::alloc_page(stack_top as usize, Some(ttbr0));
+        // Self::alloc_page(stack_top as usize - PAGE_SIZE, Some(ttbr0)); // allocate 2 pages for stack right now \TODO make this dynamic 
 
         Ok((entry_point, stack_top, ttbr0))
 

@@ -9,11 +9,11 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio  -
           =%* =-  =| %                      Scheduler:     Round Robin
         +%# ==    =| %                      Timer:         PhysicalNonSecure
        %% ==      =| %%%%%%%%%%%%%%%%%%%%%  IO:            Mini UART
-     %% ===========|=================-  %   Build:         2026-07-15 15:29:39
+     %% ===========|=================-  %   Build:         2026-07-16 12:48:10
    %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
  %% :+            =| +   = \==\      %%     Repository:    https://github.com/ZackyGameDev/AtOS
 #%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
-   ############*% +|     %%********         git hash:      7efa365
+   ############*% +|     %%********         git hash:      290fbf1
                 % +|   %%               
                 % +| %%                 
                 %  %%                   

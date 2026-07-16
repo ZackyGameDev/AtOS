@@ -27,8 +27,7 @@ pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to ali
 // we only now need to keep track of which of those are allocated 
 // and which are not being used.
 
-pub const KERNEL_STACK_REGION_START: u64 = 0xFFFF_FF80_8000_0000 + 0x4000; // first 0x4000 bytes are served for kernel stack
-                                                                          // which will be treated like process 0's kernel stack. 
+pub const KERNEL_STACK_REGION_START: u64 = 0xFFFF_FF80_8000_0000;  
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum StackState {
     Allocated(u64),

@@ -2,7 +2,7 @@
                      #                      ──────────────────────────────────────
                     ##                      Architecture:  AArch64
                   ## #                      CPU:           Cortex-A53
-                ##   #                      EL:            EL1 → EL0
+                ##   #                      EL:            EL1 ↔ EL0
               ## :#| #                      MMU:           ✓ (39-bit 2 Level VA space)
             %#  = #| %                      Kernel VA:     0xFFFF_FF80_0008_0000
           =%* =-  =| %                      Scheduler:     Round Robin

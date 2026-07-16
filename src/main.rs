@@ -30,30 +30,26 @@ fn show_welcome_ascii() {
 
 #[unsafe(no_mangle)]
 pub extern "C" fn _rust_main() -> ! {
+    
     // let kernel_end_addr = unsafe { &_kernel_top as *const u8 as usize };
     let stack_top_addr = unsafe { &_stack_top as *const u8 as usize };
-
+    
     KERNEL_IO.init();
     PhysicalTimer::init_irq();
     Interrupts::daif_unmask_all();
     PageAllocator::init_frames(stack_top_addr + 0x1000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
-    let kernel_root_sp = KernelStack::alloc_stack(0);
-
+    // let kernel_root_sp = KernelStack::alloc_stack(0); // this is currently commented because it ends up being unused. But 
+                                                        // there may be need for it later. so it is still here as a hint.
+    
     show_welcome_ascii();
-    println!("Welcome, to AtOS... \nKernel is running in EL{}.", get_current_el());
-
-    println!("Kernel done. Loading two processes for demonstration.");
-
-    let frq = PhysicalTimer::read_frq();
-
-    println!("Physical Timer frequency: {} Hz", frq);
+    println!("\nWelcome, to AtOS...\n");
 
     // since fork and exec syscalls have been implemented,
     // init process itself can spawn other processes needed. 
     // so we only need to 
     FileSystem::run_executable("init", 0).unwrap();
 
-    println!("Starting the scheduler!");
+    dprintln!("[main] Starting the scheduler!");
     Scheduler::start();
 
     // the_end() // this should never be reached, but still keeping it here if preceeding code is changed during testings
@@ -69,6 +65,7 @@ pub fn the_end() -> ! {
     println!("----------THE END-----------");
     println!("All processes have completed/terminated.");
     println!("There is nothing left to do. You may power off your device now.");
+    println!("----------------------------");
     PhysicalTimer::set_seconds(1);
     PhysicalTimer::disable();
     loop { core::hint::spin_loop(); }

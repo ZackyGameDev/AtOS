@@ -3,51 +3,49 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio  -
                      #                      ──────────────────────────────────────
                     ##                      Architecture:  AArch64
                   ## #                      CPU:           Cortex-A53
-                ##   #                      EL:            EL1 → EL0
+                ##   #                      EL:            EL1 ↔ EL0
               ## :#| #                      MMU:           ✓ (39-bit 2 Level VA space)
             %#  = #| %                      Kernel VA:     0xFFFF_FF80_0008_0000
           =%* =-  =| %                      Scheduler:     Round Robin
         +%# ==    =| %                      Timer:         PhysicalNonSecure
        %% ==      =| %%%%%%%%%%%%%%%%%%%%%  IO:            Mini UART
-     %% ===========|=================-  %   Build:         2026-07-16 12:48:10
+     %% ===========|=================-  %   Build:         2026-07-16 13:04:13
    %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
  %% :+            =| +   = \==\      %%     Repository:    https://github.com/ZackyGameDev/AtOS
 #%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
-   ############*% +|     %%********         git hash:      290fbf1
+   ############*% +|     %%********         git hash:      895e812
                 % +|   %%               
                 % +| %%                 
                 %  %%                   
                  %%                     
 
-Welcome, to AtOS... 
-Kernel is running in EL1.
-Kernel done. Loading two processes for demonstration.
-Physical Timer frequency: 62500000 Hz
-Starting the scheduler!
-hello this code is running in the init program!
+
+Welcome, to AtOS...
+
+hello this code is running in the 'a' program!
 x = 1
 x = 2
-init program is working, iteration 0
-init program is working, iteration 1
-init program is working, iteration 2
-init program is working, iteration 3
-init program is working, iteration 4
-init program is working, iteration 5
-init program is working, iteration 6
-init program is working, iteration 7
-init program is working, iteration 8
-init program is working, iteration 9
-init program is working, iteration 10
-init program is working, iteration 11
-init program is working, iteration 12
-init program is working, iteration 13
-init program is working, iteration 14
-init program is working, iteration 15
-init program is working, iteration 16
-init program is working, iteration 17
-init program is working, iteration 18
-init program is working, iteration 19
-init program will now fork and wait for the child to finish.
+'a' program is working, iteration 0
+'a' program is working, iteration 1
+'a' program is working, iteration 2
+'a' program is working, iteration 3
+'a' program is working, iteration 4
+'a' program is working, iteration 5
+'a' program is working, iteration 6
+'a' program is working, iteration 7
+'a' program is working, iteration 8
+'a' program is working, iteration 9
+'a' program is working, iteration 10
+'a' program is working, iteration 11
+'a' program is working, iteration 12
+'a' program is working, iteration 13
+'a' program is working, iteration 14
+'a' program is working, iteration 15
+'a' program is working, iteration 16
+'a' program is working, iteration 17
+'a' program is working, iteration 18
+'a' program is working, iteration 19
+'a' program will now fork and wait for the child to finish.
 I'm parent, now waiting for child to finish
 child working 0
 child working 1
@@ -60,7 +58,7 @@ child working 7
 child working 8
 child working 9
 child is done working, it will now exit.
-parent waited for child process with pid 2 to finish, it exited with code 0
+parent waited for child process with pid 3 to finish, it exited with code 0
 parent will now exit.
 before exiting, spawning process c for next test.
 hello this code is running in the c program!
@@ -102,14 +100,15 @@ c parent working 10
 c parent working 11
 c parent working 12
 c parent working 13
-c parent working 14
-i'm c child! i finished early!
+c parent working i'm c child! i finished early!
 -----------PANIC------------
 Location: src/bin/c.rs:23:17
 Message:  Hi im c child. I just paniced here to check if my parent receives my exit code 1.
 ----------------------------
-c parent waited for child process with pid 4 to finish, it exited with code 1
+14
+c parent waited for child process with pid 5 to finish, it exited with code 1
 c parent will now exit.
 ----------THE END-----------
 All processes have completed/terminated.
 There is nothing left to do. You may power off your device now.
+----------------------------

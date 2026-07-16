@@ -104,6 +104,8 @@ pub struct FreeFrame {
 }
 
 pub static mut FREE_FRAME_LIST: Option<*mut FreeFrame> = None;
+pub static mut FREE_FRAME_COUNT: usize = 0;
+pub static mut TOTAL_FRAME_COUNT: usize = 0;
 pub struct PageAllocator;
 
 // \TODO add a method to keep track of how many frames are used/available
@@ -507,6 +509,7 @@ impl PageAllocator {
             if let Some(free_frame) = FREE_FRAME_LIST {
                 let free_frame_va = free_frame as usize;
                 FREE_FRAME_LIST = (*free_frame).next;
+                FREE_FRAME_COUNT -= 1;
                 Some(ttbr1_to_pa!(free_frame_va))
             } else {
                 None
@@ -526,7 +529,8 @@ impl PageAllocator {
         Self::zero_frame(free_frame_va);
         mprintln!("[PAGE_ALLOC] Adding free frame at va: {:#x}", free_frame_va);
         unsafe { (*free_frame).next = FREE_FRAME_LIST;
-                 FREE_FRAME_LIST = Some(free_frame) };
+                 FREE_FRAME_LIST = Some(free_frame);
+                 FREE_FRAME_COUNT += 1; };
     }
 
     // run at boot. marks all frames as free and adds them to the free frame list
@@ -534,10 +538,17 @@ impl PageAllocator {
         for frame_va in (first_free_frame_va..last_frame_va_limit).step_by(PAGE_SIZE) {
             PageAllocator::add_free_frame(frame_va);
         }
+        unsafe {TOTAL_FRAME_COUNT = FREE_FRAME_COUNT;}
     }
 }
 
+pub fn available_memory() -> usize {
+    unsafe { FREE_FRAME_COUNT * PAGE_SIZE }
+}
 
+pub fn total_memory() -> usize {
+    unsafe { TOTAL_FRAME_COUNT * PAGE_SIZE }
+}
 
 
 /* ~~~ kernel TTBR1 EL1 paging (hardcoded) ~~~ */

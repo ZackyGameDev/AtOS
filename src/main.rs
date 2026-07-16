@@ -39,7 +39,7 @@ pub extern "C" fn _rust_main() -> ! {
     KERNEL_IO.init();
     PhysicalTimer::init_irq();
     Interrupts::daif_unmask_all();
-    PageAllocator::init_frames(stack_top_addr + 0x1000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
+    PageAllocator::init_frames(stack_top_addr + 0x2000, ttbr1_to_va!(0x3EFFE000)); // eye balled end of usable RAM space.
     // let kernel_root_sp = KernelStack::alloc_stack(0); // this is currently commented because it ends up being unused. But 
                                                         // there may be need for it later. so it is still here as a hint.
     

@@ -6,10 +6,13 @@ stacks, and allocate them in this module.
 
 use core::ptr::{read_volatile, write_volatile};
 
-use crate::kernel::scheduler::Scheduler;
-use crate::kernel::{processes::MAX_PROCESSES, spinlock::Spinlock};
-use crate::kernel::paging::{PageAllocator, PageTable};
-use crate::kernel::paging::PAGE_TABLE_KERNEL_L1;
+use crate::kernel::{
+    scheduler::Scheduler,
+    processes::MAX_PROCESSES,
+    // spinlock::Spinlock,
+    paging::{PageAllocator, PageTable, PAGE_TABLE_KERNEL_L1},
+};
+
 use crate::{dprintln, ttbr1_to_pa};
 
 // Each process will have a kernel stack of 16KB (4 pages)

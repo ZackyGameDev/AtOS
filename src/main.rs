@@ -3,7 +3,6 @@
 
 mod kernel;
 
-use kernel::utils::get_current_el;
 use kernel::io::KERNEL_IO;
 use kernel::timer::PhysicalTimer;
 use kernel::interrupts::Interrupts;
@@ -72,8 +71,6 @@ pub fn the_end() -> ! {
 }
 
 use core::panic::PanicInfo;
-
-use crate::kernel::kernelstack::KernelStack;
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {

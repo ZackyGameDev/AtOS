@@ -100,12 +100,12 @@ c parent working 10
 c parent working 11
 c parent working 12
 c parent working 13
-c parent working i'm c child! i finished early!
+c parent working 14
+i'm c child! i finished early!
 -----------PANIC------------
 Location: src/bin/c.rs:23:17
 Message:  Hi im c child. I just paniced here to check if my parent receives my exit code 1.
 ----------------------------
-14
 c parent waited for child process with pid 5 to finish, it exited with code 1
 c parent will now exit.
 ----------THE END-----------

@@ -23,6 +23,11 @@ Total usable memory: 1003 MB
 
 Welcome, to AtOS...
 
+argc = 3
+offset[0] = 0
+offset[1] = 0
+offset[2] = 0
+init process started with 3 args: ["\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", "", ""]
 init loaded, now spawning process a and echo for testing the scheduler.
 hello this code is running in the 'a' program!
 x = 1
@@ -93,12 +98,7 @@ c parent working 1
 c parent working 2
 c parent working 3
 c parent working 4
-c parent working 5i'm c child! i finished early!
------------PANIC------------
-Location: src/bin/c.rs:23:17
-Message:  Hi im c child. I just paniced here to check if my parent receives my exit code 1.
-----------------------------
-
+c parent working 5
 c parent working 6
 c parent working 7
 c parent working 8
@@ -108,14 +108,13 @@ c parent working 11
 c parent working 12
 c parent working 13
 c parent working 14
+i'm c child! i finished early!
+-----------PANIC------------
+Location: src/bin/c.rs:23:17
+Message:  Hi im c child. I just paniced here to check if my parent receives my exit code 1.
+----------------------------
 c parent waited for child process with pid 5 to finish, it exited with code 1
 c parent will now exit.
 spawned process a, now spawning process echo
 -- Input Test --
 Type something: 
-hello there
-Kernel said: hello there
-----------THE END-----------
-All processes have completed/terminated.
-There is nothing left to do. You may power off your device now.
-----------------------------

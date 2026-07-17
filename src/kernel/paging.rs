@@ -225,21 +225,20 @@ impl PageAllocator {
 
         while src_offset < src.len() {
 
-            let frame_va = match Self::ttbr0_to_ttbr1(current_va, ttbr0_val) {
+            let dst = match Self::ttbr0_to_ttbr1(current_va, ttbr0_val) {
                 Some(va) => va as *mut u8,
                 None => return Err("Destination page not mapped"),
             };
 
-            let offset_in_page = current_va & 0xFFF;
             let bytes_this_page = core::cmp::min(
-                PAGE_SIZE - offset_in_page,
+                PAGE_SIZE - (current_va & (PAGE_SIZE - 1)),
                 src.len() - src_offset,
             );
 
             unsafe {
                 core::ptr::copy_nonoverlapping(
                     src.as_ptr().add(src_offset),
-                    frame_va.add(offset_in_page),
+                    dst,
                     bytes_this_page,
                 );
             }
@@ -249,7 +248,7 @@ impl PageAllocator {
         }
 
         Ok(())
-    }
+}
     
     // sometimes, the ttbr0 of a process might not be the one which is loaded. so 
     // you cannot write to that process's va space directly, you need to a ttbr1

@@ -225,12 +225,23 @@ impl Process {
 
         // Update the process context with the new entry point, stack pointer, and page table
         self.pctx = ProcessContext::new(entry_point, stack_top, new_kernel_sp, new_ttbr0);
+
+        dprintln!("[PROC_EXEC] Process pid {}, name \"{:?}\" exec'd new program with entry_point: {:#x}, user_sp: {:#x}, kernel_sp: {:#x}, ttbr0: {:#x}",
+                  self.pid, self.name, entry_point, stack_top, new_kernel_sp, new_ttbr0);
+
+        // read sp
+        let mut sp: u64 = 0;
+        unsafe { core::arch::asm!("mov {}, sp", out(reg) sp); }
+        dprintln!("[SYS_EXEC] SP is at {:#x} for process pid {}, name \"{:?}\"", sp, self.pid, self.name);
+
+        dprintln!("[PROC_EXEC] Calling initialize_args with args: {:?}", args);
         self.initialize_args(args)?;
 
         Ok(())
     }
     
     pub fn initialize_args(&mut self, args: &[&str]) -> Result<(), &'static str> {
+        dprintln!("[PROC_ARGS] Initializing args for process pid {}, name \"{:?}\"", self.pid, self.name);
         let (argc, new_sp, sp_top) = self.push_args_to_stack(args)?;
         self.pctx.x[0] = argc;
         self.pctx.x[1] = new_sp;
@@ -294,13 +305,16 @@ impl Process {
             arg_starts[i] = sp as u64;
         }
 
+
         sp &= !0xF;
 
-        if sp < args.len() * size_of::<u64>() {
+        if sp < args.len() * size_of::<u64>() + 8 { // +8 in case of alignment padding later
             return Err("arguments exceed stack");
         }
 
         sp -= args.len() * size_of::<u64>();
+        
+        sp &= !0xF;
 
         for (i, arg_start) in arg_starts[..args.len()].iter().enumerate() {
             let offset = *arg_start - sp as u64;
@@ -312,6 +326,8 @@ impl Process {
         let stack_top = self.pctx.sp_el0;
         let new_sp = stack_top - (STACK_BUF_SIZE - sp) as u64;
 
+        dprintln!("[PROC_ARGS] Copying {} bytes to user stack at new_sp {:#x} for process pid {}, name \"{:?}\"", STACK_BUF_SIZE - sp, new_sp, self.pid, self.name);
+
         PageAllocator::copy_to_pages(
             &image[sp..],
             new_sp,
@@ -319,6 +335,10 @@ impl Process {
         )?;
 
         self.pctx.sp_el0 = new_sp;
+
+        // debug print a full overview of the situation
+        dprintln!("[PROC_ARGS] Args pushed to stack for process pid {}, name \"{:?}\". Final SP: {:#x}, Stack Top: {:#x}, Arg Offsets: {:?}",
+                  self.pid, self.name, new_sp, stack_top, &arg_starts[..args.len()]);
 
         Ok((args.len() as u64, new_sp, stack_top))
     }

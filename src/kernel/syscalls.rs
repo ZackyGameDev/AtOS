@@ -204,6 +204,8 @@ fn sys_exec(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
         }
     };
 
+    dprintln!("[SYS_EXEC] Executing file: {} with {} args", path_str, argc);
+
     if let Err(e) = current_process.exec(elf_bytes, &strings[..argc]) {
         dprintln!("[SYS_EXEC] exec failed: {}", e);
         ctx.x[0] = u64::MAX;

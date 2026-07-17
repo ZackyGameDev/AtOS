@@ -15,8 +15,8 @@ use crate::kernel::{
 
 use crate::{dprintln, ttbr1_to_pa};
 
-// Each process will have a kernel stack of 16KB (4 pages)
-pub const KERNEL_STACK_SIZE: usize = 0x4000; // this MUST be 4096 aligned to align with paging boundaries
+// Each process will have a kernel stack of 16KB (6 pages)
+pub const KERNEL_STACK_SIZE: usize = 0x7000; // this MUST be 4096 aligned to align with paging boundaries
 
 // i'm not going to just make a mutable static array of stacks
 // because that is a huge waste of memory

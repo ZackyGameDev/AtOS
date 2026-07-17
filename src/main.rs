@@ -14,8 +14,8 @@ use kernel::paging::total_memory;
 // pub const DEBUG_PRINTS_ENABLED_MMU: bool = true;
 pub static mut DEBUG_PRINTS_ENABLED_MMU: bool = false;
 
-pub const DEBUG_PRINTS_ENABLED: bool = true;
-// pub const DEBUG_PRINTS_ENABLED: bool = false;
+// pub const DEBUG_PRINTS_ENABLED: bool = true;
+pub const DEBUG_PRINTS_ENABLED: bool = false;
 
 // this is to read from the linker-- the end of kernel in memory and top of the stack.
 unsafe extern "C" {
@@ -51,7 +51,7 @@ pub extern "C" fn _rust_main() -> ! {
     // since fork and exec syscalls have been implemented,
     // init process itself can spawn other processes needed. 
     // so we only need to 
-    FileSystem::run_executable("init", 0, &[]).unwrap();
+    FileSystem::run_executable("init", 0, &["init", "hi there", "this is test of args"]).unwrap();
 
     dprintln!("[main] Starting the scheduler!");
     Scheduler::start();

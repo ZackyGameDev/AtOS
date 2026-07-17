@@ -30,6 +30,11 @@ impl KernelIO {
             self.lock.acquire();
             let c = self.device.read_byte();
 
+            if c == 8 || c == 127 {
+                self.lock.release();
+                return c;
+            }
+            
             if c == b'\r' {
                 self.device.write_byte(b'\n');
                 self.lock.release();
@@ -51,11 +56,28 @@ impl KernelIO {
         let mut r = 0;
         while r < buf.len() {
             let c = self.getch();
-            buf[r] = c;
-            r += 1;
+            match c {
+                // Handle backspace and delete
+                8 | 127 => {
+                    if r > 0 {
+                        r -= 1;
 
-            if c == b'\n' {
-                break;
+                        self.lock.acquire();
+                        self.device.write_byte(8);
+                        self.device.write_byte(b' ');
+                        self.device.write_byte(8);
+                        self.lock.release();
+                    }
+                }
+
+                _ => {
+                    buf[r] = c;
+                    r += 1;
+
+                    if c == b'\n' {
+                        break;
+                    }
+                }
             }
         }
         r

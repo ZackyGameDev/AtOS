@@ -27,10 +27,10 @@ impl FileSystem {
         }
     }
 
-    pub fn run_executable(file_name: &str, parent_pid: u64) -> Result<(), &'static str> {
+    pub fn run_executable(file_name: &str, parent_pid: u64, args: &[&str]) -> Result<(), &'static str> {
         dprintln!("FileSystem: run_executable called with file_name: {}", file_name);
         if let Some(elf_bytes) = Self::read_file(file_name) {
-            let pid = Process::spawn_from_elf(file_name, parent_pid, elf_bytes)?;
+            let pid = Process::spawn_from_elf(file_name, parent_pid, elf_bytes, args)?;
             dprintln!("[FILESYSTEM] Spawned process '{}' with PID {}", file_name, pid);
             Ok(())
         } else {

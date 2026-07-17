@@ -36,7 +36,7 @@ fn main() {
                 }
                 println!("parent will now exit.").unwrap();
                 println!("before exiting, spawning process c for next test.").unwrap();
-                spawn("c").unwrap();
+                spawn("c", &[]).unwrap();
             }
         }
         Err(_) => {

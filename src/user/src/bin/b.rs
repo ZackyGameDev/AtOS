@@ -23,7 +23,7 @@ fn child_do() {
         println!("child process is working, iteration {}", i).unwrap();
     }
     println!("child process is done working, it will now attempt exec(\"init\")").unwrap();
-    exec("init").unwrap();
+    exec("init", &[]).unwrap();
 }
 
 fn main() {

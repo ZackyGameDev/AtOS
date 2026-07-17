@@ -29,7 +29,7 @@ as the physical RAM exists.
 
 #![allow(static_mut_refs)]
 
-use crate::{ttbr1_to_pa, ttbr1_to_va, mprintln};
+use crate::{dprintln, mprintln, ttbr1_to_pa, ttbr1_to_va};
 use crate::kernel::elf::{Elf64Hdr, Elf64ProgHdr, PT_LOAD};
 
 // TCR_EL1 register values for 4KB granule, 36-bit physical address space, inner shareable, write-back write-allocate cacheable memory
@@ -108,7 +108,6 @@ pub static mut FREE_FRAME_COUNT: usize = 0;
 pub static mut TOTAL_FRAME_COUNT: usize = 0;
 pub struct PageAllocator;
 
-// \TODO add a method to keep track of how many frames are used/available
 impl PageAllocator {
 
     // this was originally written in kernel::processes:load_elf_process
@@ -218,6 +217,8 @@ impl PageAllocator {
     }
 
     pub fn copy_to_pages(src: &[u8], dst_va: u64, ttbr0_val: Option<u64>) -> Result<(), &'static str> {
+
+        dprintln!("[PAGE_ALLOC] Copying {} bytes to pages at dst_va {:#x} with ttbr0_val {:#x}", src.len(), dst_va, ttbr0_val.unwrap_or(0));
 
         let mut src_offset = 0usize;
         let mut current_va = dst_va as usize;

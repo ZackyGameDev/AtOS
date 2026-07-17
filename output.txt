@@ -1,4 +1,4 @@
-qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio  -display none
+qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio -display none
                                             AtOS 0.1.0-dev
                      #                      ──────────────────────────────────────
                     ##                      Architecture:  AArch64
@@ -9,111 +9,3154 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio  -
           =%* =-  =| %                      Scheduler:     Round Robin
         +%# ==    =| %                      Timer:         PhysicalNonSecure
        %% ==      =| %%%%%%%%%%%%%%%%%%%%%  IO:            Mini UART
-     %% ===========|=================-  %   Build:         2026-07-16 19:29:10
+     %% ===========|=================-  %   Build:         2026-07-17 14:37:18
    %% =+          =| /===\ /===        %    Rust:          rustc 1.94.1 (e408947bf 2026-03-25)
  %% :+            =| +   = \==\      %%     Repository:    https://github.com/ZackyGameDev/AtOS
 #%#               +| \===/ ===/    %%+      Documentation: https://zackygamedev.github.io/RustOSGuideforRPi3/
-   ############*% +|     %%********         git hash:      4a534b3
+   ############*% +|     %%********         git hash:      2ff340c
                 % +|   %%               
                 % +| %%                 
                 %  %%                   
                  %%                     
 
+Total usable memory: 1003 MB
 
 Welcome, to AtOS...
 
-hello this code is running in the 'a' program!
-x = 1
-x = 2
-'a' program is working, iteration 0
-'a' program is working, iteration 1
-'a' program is working, iteration 2
-'a' program is working, iteration 3
-'a' program is working, iteration 4
-'a' program is working, iteration 5
-'a' program is working, iteration 6
-'a' program is working, iteration 7
-'a' program is working, iteration 8
-'a' program is working, iteration 9
-'a' program is working, iteration 10
-'a' program is working, iteration 11
-'a' program is working, iteration 12
-'a' program is working, iteration 13
-'a' program is working, iteration 14
-'a' program is working, iteration 15
-'a' program is working, iteration 16
-'a' program is working, iteration 17
-'a' program is working, iteration 18
-'a' program is working, iteration 19
-'a' program will now fork and wait for the child to finish.
-I'm parent, now waiting for child to finish
-child working 0
-child working 1
-child working 2
-child working 3
-child working 4
-child working 5
-child working 6
-child working 7
-child working 8
-child working 9
-child is done working, it will now exit.
-parent waited for child process with pid 3 to finish, it exited with code 0
-parent will now exit.
-before exiting, spawning process c for next test.
-hello this code is running in the c program!
-x = 1
-x = 2
-c program is working, iteration 0
-c program is working, iteration 1
-c program is working, iteration 2
-c program is working, iteration 3
-c program is working, iteration 4
-c program is working, iteration 5
-c program is working, iteration 6
-c program is working, iteration 7
-c program is working, iteration 8
-c program is working, iteration 9
-c program is working, iteration 10
-c program is working, iteration 11
-c program is working, iteration 12
-c program is working, iteration 13
-c program is working, iteration 14
-c program is working, iteration 15
-c program is working, iteration 16
-c program is working, iteration 17
-c program is working, iteration 18
-c program is working, iteration 19
-c program will now fork and wait for the child to finish.
-I'm c parent, now working
-c parent working 0
-c parent working i'm c child! i finished early!
------------PANIC------------
-Location: src/bin/c.rs:23:17
-Message:  Hi im c child. I just paniced here to check if my parent receives my exit code 1.
-----------------------------
-1
-c parent working 2
-c parent working 3
-c parent working 4
-c parent working 5
-c parent working 6
-c parent working 7
-c parent working 8
-c parent working 9
-c parent working 10
-c parent working 11
-c parent working 12
-c parent working 13
-c parent working 14
-c parent waited for child process with pid 5 to finish, it exited with code 1
-c parent will now exit.
-spawned process a, now spawning process echo
--- Input Test --
-Type something: 
-this seems to be working now
-Kernel said: this seems to be working now
-----------THE END-----------
-All processes have completed/terminated.
-There is nothing left to do. You may power off your device now.
-----------------------------
+      FileSystem: run_executable called with file_name: init
+      [PAGE_ALLOC] Copying 26363 bytes to pages at dst_va 0x0 with ttbr0_val 0x3effd000
+      [alloc_stack] Allocating kernel stack for pid 1
+      [alloc_stack] Value read from kernel stack: 123456789ABCDEF0
+      [alloc_stack] Allocated kernel stack for pid 1 at VA: FFFFFF8080000000
+      New process created with PID: 1, name: 'init', entry_point: 0x414, user_sp: 0x166f0, kernel_sp: 0xffffff8080004000, ttbr0: 0x3effd000
+      [PROC_ARGS] Pushing 0 args to stack for process pid 1, name "[105, 110, 105, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
+      [PAGE_ALLOC] Copying 0 bytes to pages at dst_va 0x166f0 with ttbr0_val 0x3effd000
+      [FILESYSTEM] Spawned process 'init' with PID 1
+      [main] Starting the scheduler!
+      [SCHEDULER] Starting scheduler...
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+      [EXCEPTIONS] svc #0 from EL1 detected. starting scheduler...
+      [TIMER] p cval was set.. 9 ms
+      [SCHEDULER] Scheduling next process...
+      [EXCEPTION CONTEXT] Updated from ProcessContext: ExceptionContext { etype: _SYNC, esource: _EL1h, x: [0x0, 0x166F0, 0x166F0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0], elr: 0x414, spsr: 0x0, esr: 0x56000000, far: 0x0, sp_el0: 0x166F0, sp_el1: 0xFFFFFF8080004000, ttbr0: 0x3EFFD000 }
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL064
+      [SYSCALL] Syscall number: 4
+      [SYS_FORK] Forking process pid 1, name "[105, 110, 105, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
+      [PROC_FORK] duplicating process pid 1, name "[105, 110, 105, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]"
+      [PROC_FORK] now kernel dupe pid 1, name "[105, 110, 105, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]" into new process pid 2
+      [alloc_stack] Allocating kernel stack for pid 2
+      [alloc_stack] Value read from kernel stack: 123456789ABCDEF0
+      [alloc_stack] Allocated kernel stack for pid 2 at VA: FFFFFF8080004000
+      [PROC_FORK] parent process is: Process { pid: 1, name: [105, 110, 105, 116, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], state: Running, block_reason: None, parent_pid: 0, pctx: ProcessContext { x: [21720, 1, 8, 0, 0, 0, 0, 0, 91584, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4236], elr: 2980, spsr: 0, sp_el0: 91424, sp_el1: 18446743526101237760, ttbr0: 1056952320 }, chan: 0, exit_code: 0 }
+      [PROC_FORK] child process context will be: ProcessContext { x: [21720, 1, 8, 0, 0, 0, 0, 0, 91584, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4236], elr: 2980, spsr: 0, sp_el0: 91424, sp_el1: 18446743526101254144, ttbr0: 1056858112 }
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL064
+      [SYSCALL] Syscall number: 6
+      [SYS_WAIT] SCENARIO C blocking current process pid 1 waiting for child pid 2
+      [SCHEDULER] Scheduling next process...
+      [EXCEPTION CONTEXT] Updated from ProcessContext: ExceptionContext { etype: _SYNC, esource: _EL064, x: [0x0, 0x1, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x165C0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x108C], elr: 0xBA4, spsr: 0x0, esr: 0x56000006, far: 0x0, sp_el0: 0x16520, sp_el1: 0xFFFFFF8080008000, ttbr0: 0x3EFE6000 }
+      [EXCEPTION] Exception detected! Type: _IRQ, Source: _EL064
+      [P_TIMER] Physical Timer Interrupt Fired!
+      [P_TIMER] Calling Scheduler
+      [TIMER] p cval was set.. 1 seconds
+      [TIMER] p cval was set.. 9 ms
+      [SCHEDULER] Scheduling next process...
+      [EXCEPTION CONTEXT] Updated from ProcessContext: ExceptionContext { etype: _IRQ, esource: _EL064, x: [0x0, 0x1, 0x8, 0x0, 0x0, 0x0, 0x0, 0x0, 0x165C0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x108C], elr: 0xBA4, spsr: 0x0, esr: 0x56000006, far: 0x0, sp_el0: 0x16520, sp_el1: 0xFFFFFF8080008000, ttbr0: 0x3EFE6000 }
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL064
+      [SYSCALL] Syscall number: 5
+      [SYS_EXEC] Attempting to execute file: a
+      [PAGE_ALLOC] Copying 29691 bytes to pages at dst_va 0x0 with ttbr0_val 0x3efd1000
+      [alloc_stack] Allocating kernel stack for pid 2
+      [alloc_stack] Value read from kernel stack: 123456789ABCDEF0
+      [alloc_stack] Allocated kernel stack for pid 2 at VA: FFFFFF8080008000
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:
+  x00 = 0xffffff800043b4b8
+  x01 = 0xffffff8080007a50
+  x02 = 0x0000000000000001
+  x03 = 0xffffff8000086d74
+  x04 = 0x0000000000000002
+  x05 = 0x0000000000000010
+  x06 = 0x0000000000000014
+  x07 = 0x0000000000000036
+  x08 = 0xffffff800043b5e8
+  x09 = 0xffffff800043b5e8
+  x10 = 0x00000000000000f8
+  x11 = 0x0000000000000000
+  x12 = 0x0000000001010101
+  x13 = 0x0000000000000002
+  x14 = 0x0000000000000002
+  x15 = 0xffffff8000200f52
+  x16 = 0x0000000072650000
+  x17 = 0x0000000000007a20
+  x18 = 0x0000000000650000
+  x19 = 0x0000000000000001
+  x20 = 0xffffff8080007a50
+  x21 = 0xffffff800043b4b8
+  x22 = 0x00000000000173f0
+  x23 = 0x000000003efd1000
+  x24 = 0x0000000000000950
+  x25 = 0xffffff808000c000
+  x26 = 0xffffff8080007950
+  x27 = 0x0000000000000001
+  x28 = 0x0000000000000000
+  x29 = 0x0000000000000000
+  x30 = 0xffffff8000083a10
+=========================
+      [EXCEPTION] Exception detected! Type: _SYNC, Source: _EL1h
+Unhandled exception detected!
+=== Exception Context ===
+Type : SYNC (0)
+Source : EL1h (1)
+ELR  : 0xffffff8000081480
+SPSR : 0x00000000000003c5
+ESR  : 0x0000000096000047
+FAR  : 0xffffff8080004000
+SP_EL0 : 0x0000000000016200
+TTBR0  : 0x000000003efe6000
+Registers:

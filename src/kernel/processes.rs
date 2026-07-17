@@ -156,16 +156,18 @@ impl Process {
 
     // very self explanatory. this function loads an elf file into memory and creates a process for it.
     // it returns the pid of the newly created process.
-    pub fn spawn_from_elf(name: &str, parent_pid: u64, bytes: &'static [u8]) -> Result<u64, &'static str> {
+    pub fn spawn_from_elf(name: &str, parent_pid: u64, bytes: &'static [u8], args: &[&str]) -> Result<u64, &'static str> {
         let (entry_point, stack_top, ttbr0) = PageAllocator::load_elf(bytes)?;
 
-        let process = match Process::new(name, parent_pid, entry_point, stack_top, ttbr0) {
+        let mut process = match Process::new(name, parent_pid, entry_point, stack_top, ttbr0) {
             Ok(process) => process,
             Err(e) => {
                 PageAllocator::free_page_table(Some(ttbr0)); // free page table of failed process.
                 return Err(e)
             }
         };
+
+        process.initialize_args(args)?;
 
         if let Err(e) = add_process_to_ptable(process) {
             PageAllocator::free_page_table(Some(ttbr0)); // free page table of failed process.
@@ -211,7 +213,7 @@ impl Process {
                   exit_code: 0, } )
     }
     
-    pub fn exec(&mut self, elf_bytes: &'static [u8]) -> Result<(), &'static str> {
+    pub fn exec(&mut self, elf_bytes: &'static [u8], args: &[&str]) -> Result<(), &'static str> {
         let (entry_point, stack_top, new_ttbr0) = PageAllocator::load_elf(elf_bytes)?;
 
         // Free the old page table
@@ -223,11 +225,20 @@ impl Process {
 
         // Update the process context with the new entry point, stack pointer, and page table
         self.pctx = ProcessContext::new(entry_point, stack_top, new_kernel_sp, new_ttbr0);
+        self.initialize_args(args)?;
 
         Ok(())
     }
     
-    pub fn push_args_to_stack(&mut self, args: &[&str]) -> Result<(u64, u64, u64), &'static str> {
+    pub fn initialize_args(&mut self, args: &[&str]) -> Result<(), &'static str> {
+        let (argc, new_sp, sp_top) = self.push_args_to_stack(args)?;
+        self.pctx.x[0] = argc;
+        self.pctx.x[1] = new_sp;
+        self.pctx.x[2] = sp_top;
+        Ok(())
+    }
+
+    fn push_args_to_stack(&mut self, args: &[&str]) -> Result<(u64, u64, u64), &'static str> {
         // since the user's ttbr0 may not be loaded, we first write everything to a buffer
 
         /*
@@ -256,7 +267,9 @@ impl Process {
         
         Where the runtime is given the stack top, and final sp values, along with number of args (argc).
         
-         */
+        */
+
+        dprintln!("[PROC_ARGS] Pushing {} args to stack for process pid {}, name \"{:?}\"", args.len(), self.pid, self.name);
 
         const STACK_BUF_SIZE: usize = 4096;
         const MAX_ARGS: usize = 64;

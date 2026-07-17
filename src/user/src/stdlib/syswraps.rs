@@ -1,10 +1,10 @@
 use crate::stdlib::syscalls::{fork, exec, wait};
 
-pub fn spawn(path: &str) -> Result<(), &'static str> {
+pub fn spawn(path: &str, args: &[&str]) -> Result<(), &'static str> {
     match fork() {
         Ok(fc) => {
             if fc == 0 {
-                exec(path)?;
+                exec(path, args)?;
             } else {
                 wait(Some(fc))?;
             }

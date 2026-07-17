@@ -112,15 +112,36 @@ pub fn fork() -> Result<u64, &'static str> {
     }
 }
 
-// exec is syscall number 5. it works like C's exec. 
-// takes a path, then replaces the current process with the new process at the path.
-pub fn exec(path: &str) -> Result<(), &'static str> {
-    let mut r: u64; 
+// exec is syscall number 5
+pub fn exec(path: &str, args: &[&str]) -> Result<(), &'static str> {
+    const MAX_ARGS: usize = 32; // kernel can handle max 64 right now
+
+    if args.len() + 1 > MAX_ARGS {
+        return Err("too many arguments");
+    }
+
+    let mut ptrs = [0u64; MAX_ARGS];
+    let mut lens = [0u64; MAX_ARGS];
+
+    // First entry is always the executable path.
+    ptrs[0] = path.as_ptr() as u64;
+    lens[0] = path.len() as u64;
+
+    // Remaining entries are argv.
+    for (i, arg) in args.iter().enumerate() {
+        ptrs[i + 1] = arg.as_ptr() as u64;
+        lens[i + 1] = arg.len() as u64;
+    }
+
+    let count = (args.len() + 1) as u64;
+
+    let mut r: u64;
     unsafe {
         core::arch::asm!(
             "svc #5",
-            inout("x0") path.as_ptr() => r,
-            in("x1") path.len(),
+            inout("x0") ptrs.as_ptr() => r,
+            in("x1") lens.as_ptr(),
+            in("x2") count,
         );
     }
 

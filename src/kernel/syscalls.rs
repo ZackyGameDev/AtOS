@@ -137,48 +137,87 @@ fn sys_fork(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
 // the exact path to the file must be passed as str in x0, with len of str in x1.
 // the file must be ELF executable.
 fn sys_exec(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
-    let path_ptr = ctx.x[0] as *const u8;
-    let path_len: usize = ctx.x[1] as usize;
+    const MAX_ARGS: usize = 32;
+    const MAX_ARG_LEN: usize = 256;
 
-    if path_ptr.is_null() || path_len == 0 {
-        dprintln!("[SYS_EXEC] Invalid arguments: null pointer or zero length.");
-        ctx.x[0] = u64::MAX; // technically the calling process will know exec failed by the fact that it didn't die yet.
-                            // but we will return -1 to indicate error anyway. 
+    let ptrs = ctx.x[0] as *const u64;
+    let lens = ctx.x[1] as *const u64;
+    let argc = ctx.x[2] as usize;
+
+    if ptrs.is_null() || lens.is_null() || argc == 0 || argc > MAX_ARGS {
+        dprintln!("[SYS_EXEC] Invalid arguments.");
+        ctx.x[0] = u64::MAX;
         return Ok(());
     }
 
-    let path_slice = unsafe { core::slice::from_raw_parts(path_ptr, path_len) };
-    let path_str = core::str::from_utf8(path_slice).unwrap_or("");
+    let mut storage = [[0u8; MAX_ARG_LEN]; MAX_ARGS];
+    let mut lengths = [0usize; MAX_ARGS];
+    let mut strings = [""; MAX_ARGS];
 
-    dprintln!("[SYS_EXEC] Attempting to execute file: {}", path_str);
+    // reading the pointers to buffers (storage)
+    for i in 0..argc {
+        let ptr = unsafe { *ptrs.add(i) } as *const u8;
+        let len = unsafe { *lens.add(i) } as usize;
 
-    if let Some(current_process) = Scheduler::get_current_process() {
+        if len > MAX_ARG_LEN || (len != 0 && ptr.is_null()) {
+            dprintln!("[SYS_EXEC] Invalid string at index {}.", i);
+            ctx.x[0] = u64::MAX;
+            return Ok(());
+        }
 
-        let mut name_bytes = [0u8; 32];
-        let bytes = path_str.as_bytes();
-        let len = core::cmp::min(bytes.len(), 32);
-        name_bytes[..len].copy_from_slice(&bytes[..len]);
+        if len != 0 {
+            unsafe {
+                core::ptr::copy_nonoverlapping(ptr, storage[i].as_mut_ptr(), len);
+            }
+        }
 
-        let elf_bytes = match FileSystem::read_file(path_str) {
-            Some(bytes) => bytes,
-            None => {
-                dprintln!("[SYS_EXEC] File not found: {}", path_str);
-                ctx.x[0] = u64::MAX; // return -1 to indicate error
+        lengths[i] = len;
+    }
+
+    // building valid &str slices from the storage
+    for i in 0..argc {
+        strings[i] = match core::str::from_utf8(&storage[i][..lengths[i]]) {
+            Ok(s) => s,
+            Err(_) => {
+                dprintln!("[SYS_EXEC] Non-UTF8 string at index {}.", i);
+                ctx.x[0] = u64::MAX;
                 return Ok(());
             }
         };
-
-        current_process.exec(elf_bytes)?;
-        current_process.name[..len].copy_from_slice(&name_bytes[..len]);
-        
-        ctx.update_from_pctx(&current_process.pctx);
-    
-        dprintln!("[SYS_EXEC] Process executed new file: {:?}", current_process);
-
-    } else {
-        dprintln!("[SYS_EXEC] Current process not found. (???)");
-        ctx.x[0] = u64::MAX; // return -1 to indicate error
     }
+
+    let path_str = strings[0];
+    dprintln!("[SYS_EXEC] Attempting to execute file: {}", path_str);
+
+    let Some(current_process) = Scheduler::get_current_process() else {
+        dprintln!("[SYS_EXEC] Current process not found.");
+        ctx.x[0] = u64::MAX;
+        return Ok(());
+    };
+
+    let elf_bytes = match FileSystem::read_file(path_str) {
+        Some(bytes) => bytes,
+        None => {
+            dprintln!("[SYS_EXEC] File not found: {}", path_str);
+            ctx.x[0] = u64::MAX;
+            return Ok(());
+        }
+    };
+
+    if let Err(e) = current_process.exec(elf_bytes, &strings[..argc]) {
+        dprintln!("[SYS_EXEC] exec failed: {}", e);
+        ctx.x[0] = u64::MAX;
+        return Ok(());
+    }
+
+    current_process.name = [0; 32];
+    let name_bytes = path_str.as_bytes();
+    let name_len = core::cmp::min(name_bytes.len(), current_process.name.len());
+    current_process.name[..name_len].copy_from_slice(&name_bytes[..name_len]);
+
+    ctx.update_from_pctx(&current_process.pctx);
+
+    dprintln!("[SYS_EXEC] Process executed new file: {:?}", current_process);
 
     Ok(())
 }

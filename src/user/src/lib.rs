@@ -64,6 +64,34 @@ macro_rules! runtime_panic_handler { () => {
 #[macro_export]
 macro_rules! parse_args {
     ($argc:expr, $final_sp:expr, $stack_top:expr, $argv:ident, $args:ident) => {
+
+        /*
+        
+        The args are passed to the user program's stack as follows:
+
+            Let's say arguments are "program hello world"
+
+            STACK TOP ADDRESS (initial sp)
+            ┌────────────────────┐
+            │ "program"          │  ← argv[0]
+            ├────────────────────┤
+            │ "hello"            │  ← argv[1]
+            ├────────────────────┤
+            │ "world"            │  ← argv[2]
+            ├────────────────────┤
+            │ padding            │
+            ├────────────────────┤
+            │ offset → "world"   │  ← &argv[2] - final sp
+            ├────────────────────┤
+            │ offset → "hello"   │  ← &argv[1] - final sp
+            ├────────────────────┤
+            │ offset → "program" │  ← &argv[0] - final sp
+            └────────────────────┘
+            Final SP (last added item on stack)
+            
+            Where the runtime is given the stack top, and final sp values, along with number of args (argc).
+         */
+
         let argc = $argc as usize;
 
         let offsets = unsafe {

@@ -9,7 +9,7 @@ use kernel::interrupts::Interrupts;
 use kernel::paging::PageAllocator;
 use kernel::scheduler::Scheduler;
 use kernel::filesystem::FileSystem;
-use kernel::paging::total_memory;
+use kernel::paging::{total_memory, available_memory};
 
 // pub const DEBUG_PRINTS_ENABLED_MMU: bool = true;
 pub static mut DEBUG_PRINTS_ENABLED_MMU: bool = false;
@@ -45,6 +45,7 @@ pub extern "C" fn _rust_main() -> ! {
                                                         // there may be need for it later. so it is still here as a hint.
     
     show_welcome_ascii();
+    println!("Total available memory: {} MB", available_memory() / (1024 * 1024));
     println!("Total usable memory: {} MB", total_memory() / (1024 * 1024));
     println!("\nWelcome, to AtOS...\n");
 

@@ -19,17 +19,21 @@ qemu-system-aarch64 -M raspi3b -kernel kernel8.img -serial null -serial stdio -d
                 %  %%                   
                  %%                     
 
+Total available memory: 1003 MB
 Total usable memory: 1003 MB
 
 Welcome, to AtOS...
 
 argc = 3
-offset[0] = 0
-offset[1] = 0
-offset[2] = 0
-init process started with 3 args: ["\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", "", ""]
-init loaded, now spawning process a and echo for testing the scheduler.
+offset[0] = 60
+offset[1] = 52
+offset[2] = 32
+init process started with 3 args: ["init", "hi there", "this is test of args"]
+argc = 2
+offset[0] = 31
+offset[1] = 27
 hello this code is running in the 'a' program!
+args passed to 'a' program: ["a", "test"]
 x = 1
 x = 2
 'a' program is working, iteration 0
@@ -118,3 +122,9 @@ c parent will now exit.
 spawned process a, now spawning process echo
 -- Input Test --
 Type something: 
+hello there lalala
+Kernel said: hello there lalala
+----------THE END-----------
+All processes have completed/terminated.
+There is nothing left to do. You may power off your device now.
+----------------------------

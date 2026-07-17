@@ -1,11 +1,12 @@
 #![no_std]
 #![no_main]
 
-use user::{entry, println, stdlib::syscalls::{fork, wait}};
+use user::{entry_args, println, stdlib::syscalls::{fork, wait}};
 use user::stdlib::syswraps::spawn;
 
-fn main() {
+fn main(args: &[&str]) {
     println!("hello this code is running in the 'a' program!").unwrap();
+    println!("args passed to 'a' program: {:?}", args).unwrap();
 
     let mut x = 1;
     println!("x = {}", x).unwrap();
@@ -46,4 +47,4 @@ fn main() {
 }
 
 
-entry!(main);
+entry_args!(main);

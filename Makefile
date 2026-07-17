@@ -7,11 +7,17 @@ OBJCOPY = aarch64-linux-gnu-objcopy
 
 QEMU = qemu-system-aarch64
 
+USER_DIR = src/user
+
 # Default target
 all: kernel8.img
 
+# Build user programs
+user:
+	$(MAKE) -C $(USER_DIR)
+
 # Build release and debug
-build:
+build: user
 	cargo build --release --target $(TARGET)
 	cargo build --target $(TARGET)
 
@@ -21,7 +27,7 @@ kernel8.img: build
 
 # Run in QEMU (Emulating Raspberry Pi 3B+ with Mini UART redirected to terminal)
 run:
-	$(QEMU) -M raspi3b -kernel kernel8.img -serial null -serial stdio  -display none
+	$(QEMU) -M raspi3b -kernel kernel8.img -serial null -serial stdio -display none
 
 .PHONY: debug
 debug:
@@ -39,5 +45,8 @@ gdb:
 
 # Clean everything
 clean:
+	$(MAKE) -C $(USER_DIR) clean
 	cargo clean
 	rm -f kernel8.img
+
+.PHONY: all build user clean run debug gdb

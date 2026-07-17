@@ -226,6 +226,89 @@ impl Process {
 
         Ok(())
     }
+    
+    pub fn push_args_to_stack(&mut self, args: &[&str]) -> Result<(u64, u64, u64), &'static str> {
+        // since the user's ttbr0 may not be loaded, we first write everything to a buffer
+
+        /*
+        
+        For execution args, we will layout the arguments data on the user stack as follows:
+
+        Let's say arguments are "program hello world"
+
+        STACK TOP ADDRESS (initial sp)
+        ┌────────────────────┐
+        │ "program"          │  ← argv[0]
+        ├────────────────────┤
+        │ "hello"            │  ← argv[1]
+        ├────────────────────┤
+        │ "world"            │  ← argv[2]
+        ├────────────────────┤
+        │ padding            │
+        ├────────────────────┤
+        │ offset → "world"   │  ← &argv[2] - final sp
+        ├────────────────────┤
+        │ offset → "hello"   │  ← &argv[1] - final sp
+        ├────────────────────┤
+        │ offset → "program" │  ← &argv[0] - final sp
+        └────────────────────┘
+        Final SP
+        
+        Where the runtime is given the stack top, and final sp values, along with number of args (argc).
+        
+         */
+
+        const STACK_BUF_SIZE: usize = 4096;
+        const MAX_ARGS: usize = 64;
+
+        if args.len() > MAX_ARGS {
+            return Err("too many arguments");
+        }
+
+        let mut image = [0u8; STACK_BUF_SIZE];
+        let mut arg_starts = [0u64; MAX_ARGS];
+        let mut sp = STACK_BUF_SIZE;
+
+        for (i, arg) in args.iter().enumerate() {
+            let bytes = arg.as_bytes();
+
+            if sp < bytes.len() {
+                return Err("arguments exceed stack");
+            }
+
+            sp -= bytes.len();
+            image[sp..sp + bytes.len()].copy_from_slice(bytes);
+            arg_starts[i] = sp as u64;
+        }
+
+        sp &= !0xF;
+
+        if sp < args.len() * size_of::<u64>() {
+            return Err("arguments exceed stack");
+        }
+
+        sp -= args.len() * size_of::<u64>();
+
+        for (i, arg_start) in arg_starts[..args.len()].iter().enumerate() {
+            let offset = *arg_start - sp as u64;
+            let dst = sp + i * size_of::<u64>();
+
+            image[dst..dst + 8].copy_from_slice(&offset.to_ne_bytes());
+        }
+
+        let stack_top = self.pctx.sp_el0;
+        let new_sp = stack_top - (STACK_BUF_SIZE - sp) as u64;
+
+        PageAllocator::copy_to_pages(
+            &image[sp..],
+            new_sp,
+            Some(self.pctx.ttbr0),
+        )?;
+
+        self.pctx.sp_el0 = new_sp;
+
+        Ok((args.len() as u64, new_sp, stack_top))
+    }
 
     pub fn block(&mut self, reason: BlockReason) {
         self.set_state(ProcessState::Blocked);

@@ -145,68 +145,44 @@ impl PageAllocator {
             };
 
             if ph.r#type == PT_LOAD {
-
                 let va_start = ph.virtaddr as usize;
                 let va_end = va_start + ph.memsize as usize;
                 let file_end = va_start + ph.filesize as usize;
 
                 let mut current_page_va = va_start & !0xFFF;
 
-                let mut file_offset = ph.offset as usize;
-
                 while current_page_va < va_end {
-
-                    let frame_va = ttbr1_to_va!(
+                    let _frame_va = ttbr1_to_va!(
                         Self::alloc_page(current_page_va, Some(ttbr0))
                     ) as *mut u8;
-                    
-                    let va_offset_in_page = if current_page_va < va_start {
-                        va_start - current_page_va
-                    } else {
-                        0
-                    };
 
-                    let page_remaining_space = 4096 - va_offset_in_page;
-
-                    let current_va_pos = current_page_va + va_offset_in_page;
-                    
-                    let bytes_to_copy = if current_va_pos < file_end {
-                        let remaining_file_bytes = file_end - current_va_pos;
-                        core::cmp::min(page_remaining_space, remaining_file_bytes)
-                    } else {
-                        0
-                    };
-
-                    if bytes_to_copy > 0 {
-                        unsafe {
-                            let src = bytes.as_ptr().add(file_offset);
-                            let dst = frame_va.add(va_offset_in_page);
-                            core::ptr::copy_nonoverlapping(src, dst, bytes_to_copy);
-                        }
-                        file_offset += bytes_to_copy;
-                    }
-
-                    // zeroing .bss
-                    let current_va_after_copy = current_va_pos + bytes_to_copy;
-                    
-                    if current_va_after_copy < va_end {
-                        let bss_offset_in_page = va_offset_in_page + bytes_to_copy;
-                        let bytes_to_zero = core::cmp::min(
-                            4096 - bss_offset_in_page,
-                            va_end - current_va_after_copy
-                        );
-
-                        if bytes_to_zero > 0 {
-                            unsafe {
-                                let dst = frame_va.add(bss_offset_in_page);
-                                core::ptr::write_bytes(dst, 0, bytes_to_zero);
-                            }
-                        }
-                    }
-
-                    // Move to the next 4KB page frame
                     current_page_va += 4096;
+                }
 
+                if ph.filesize > 0 {
+                    Self::copy_to_pages(
+                        &bytes[ph.offset as usize .. (ph.offset as usize + ph.filesize as usize)],
+                        va_start as u64,
+                        Some(ttbr0),
+                    ).expect("load_elf: copy_to_pages failed");
+                }
+
+                if file_end < va_end {
+                    let mut zero_va = file_end;
+
+                    while zero_va < va_end {
+                        let frame_va = Self::ttbr0_to_ttbr1(zero_va, Some(ttbr0))
+                            .expect("load_elf: missing page while zeroing BSS") as *mut u8;
+
+                        let offset_in_page = zero_va & 0xFFF;
+                        let bytes_to_zero = core::cmp::min(4096 - offset_in_page, va_end - zero_va);
+
+                        unsafe {
+                            core::ptr::write_bytes(frame_va.add(offset_in_page), 0, bytes_to_zero);
+                        }
+
+                        zero_va += bytes_to_zero;
+                    }
                 }
 
                 if va_end as u64 > max_allocated_addr {
@@ -241,7 +217,46 @@ impl PageAllocator {
 
     }
 
+    pub fn copy_to_pages(src: &[u8], dst_va: u64, ttbr0_val: Option<u64>) -> Result<(), &'static str> {
+
+        let mut src_offset = 0usize;
+        let mut current_va = dst_va as usize;
+
+        while src_offset < src.len() {
+
+            let frame_va = match Self::ttbr0_to_ttbr1(current_va, ttbr0_val) {
+                Some(va) => va as *mut u8,
+                None => return Err("Destination page not mapped"),
+            };
+
+            let offset_in_page = current_va & 0xFFF;
+            let bytes_this_page = core::cmp::min(
+                PAGE_SIZE - offset_in_page,
+                src.len() - src_offset,
+            );
+
+            unsafe {
+                core::ptr::copy_nonoverlapping(
+                    src.as_ptr().add(src_offset),
+                    frame_va.add(offset_in_page),
+                    bytes_this_page,
+                );
+            }
+
+            src_offset += bytes_this_page;
+            current_va += bytes_this_page;
+        }
+
+        Ok(())
+    }
     
+    // sometimes, the ttbr0 of a process might not be the one which is loaded. so 
+    // you cannot write to that process's va space directly, you need to a ttbr1
+    // address which points to the same physical frame in ttbr1 for kernel to access 
+    pub fn ttbr0_to_ttbr1(va: usize, ttbr0_val: Option<u64>) -> Option<usize> {
+        Self::ttbr0_to_pa(va, ttbr0_val).map(|pa| ttbr1_to_va!(pa) as usize)
+    }
+
     // gets the physical address of a virtual address according to given/loaded ttbr0 table
     // since ttbr0 is not identity mapped (unlike ttbr1), we have to traverse the table levels to 
     // get the physical adddress

@@ -138,7 +138,7 @@ fn sys_fork(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
 // the file must be ELF executable.
 fn sys_exec(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
     let path_ptr = ctx.x[0] as *const u8;
-    let path_len = ctx.x[1] as usize;
+    let path_len: usize = ctx.x[1] as usize;
 
     if path_ptr.is_null() || path_len == 0 {
         dprintln!("[SYS_EXEC] Invalid arguments: null pointer or zero length.");

@@ -69,11 +69,7 @@ macro_rules! parse_args {
         let offsets = unsafe {
             core::slice::from_raw_parts($final_sp as *const u64, argc)
         };
-        user::println!("argc = {}", argc).unwrap();
 
-        for i in 0..argc {
-            user::println!("offset[{}] = {}", i, offsets[i]).unwrap();
-        }
         let $argv = core::array::from_fn::<_, 64, _>(|i| {
             if i >= argc {
                 return "";

@@ -174,3 +174,21 @@ pub fn wait(pid: Option<u64>) -> Result<(u64, i64), &'static str> {
         Ok((r, exit_code))
     }
 }
+
+pub fn poll_char() -> u8 {
+    let mut r: u64;
+    unsafe {
+        core::arch::asm!("svc #7",
+                         out("x0") r,
+                         clobber_abi("C"));
+    }
+    r as u8
+}
+
+pub fn sleep(ms: u64) {
+    unsafe {
+        core::arch::asm!("svc #8",
+                         in("x0") ms,
+                         clobber_abi("C"));
+    }
+}

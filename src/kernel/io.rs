@@ -83,6 +83,34 @@ impl KernelIO {
         r
     }
 
+    // Non-blocking check for input. Returns Some(u8) if a key press
+    // is waiting, or None immediately.
+    pub fn poll_char(&self) -> Option<u8> {
+        let maybe_some_byte = self.device.poll_byte();
+        if let Some(c) = maybe_some_byte {
+            if c == 8 || c == 127 {
+                return Some(c);
+            }
+
+            if c == b'\r' {
+                self.lock.acquire();
+                self.device.write_byte(b'\n');
+                self.lock.release();
+                return Some(b'\n');
+            }
+
+            if c == b'\n' {
+                return None;
+            }
+
+            self.lock.acquire();
+            self.device.write_byte(c);
+            self.lock.release();
+            return Some(c);
+        }
+        None
+    }
+    
     pub fn write(&self, buf: &mut [u8]) {
         self.lock.acquire();
         for &byte in buf.iter() {

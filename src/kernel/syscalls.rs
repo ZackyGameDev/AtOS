@@ -21,6 +21,8 @@ pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
         4 => sys_fork(ctx).unwrap(),
         5 => sys_exec(ctx).unwrap(),
         6 => sys_wait(ctx).unwrap(),
+        7 => sys_poll_char(ctx).unwrap(),
+        8 => sys_sleep(ctx).unwrap(),
         _ => {
             print!("Unknown syscall: {}", syscall_number);
         }
@@ -284,4 +286,39 @@ fn sys_wait(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
         return Err("Where did the current process go 😦");
     }
     
+}
+
+// Syscall #7
+fn sys_poll_char(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
+    match KERNEL_IO.poll_char() {
+        Some(c) => ctx.x[0] = c as u64,
+        None => ctx.x[0] = 0,
+    }
+    Ok(())
+}
+
+// Syscall #8
+fn sys_sleep(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
+    let ms = ctx.x[0];
+
+    let freq: u64;
+    unsafe {
+        core::arch::asm!("mrs {}, cntfrq_el0", out(reg) freq);
+    }
+
+    let start_ticks: u64;
+    unsafe {
+        core::arch::asm!("mrs {}, cntpct_el0", out(reg) start_ticks);
+    }
+
+    let target_ticks = start_ticks + (freq * ms) / 1000;
+    while unsafe {
+        let current: u64;
+        core::arch::asm!("mrs {}, cntpct_el0", out(reg) current);
+        current
+    } < target_ticks {
+        core::hint::spin_loop();
+    }
+
+    Ok(())
 }

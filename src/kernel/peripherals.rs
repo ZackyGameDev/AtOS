@@ -85,4 +85,20 @@ impl Uart {
         self.lock.release();
         byte
     }
+
+    // Checks if a character is available in the FIFO.
+    // Returns Some(u8) if data is ready, or None immediately if the FIFO is empty.
+    pub fn poll_byte(&self) -> Option<u8> {
+        self.lock.acquire();
+
+        if (AUX_MU_LSR_REG.read() & 0x01) == 0 {
+            self.lock.release();
+            return None;
+        }
+
+        let byte = (AUX_MU_IO_REG.read() & 0xFF) as u8;
+        
+        self.lock.release();
+        Some(byte)
+    }
 }

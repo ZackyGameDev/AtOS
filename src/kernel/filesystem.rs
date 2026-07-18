@@ -23,6 +23,9 @@ impl FileSystem {
             "a" => Some(include_bytes!("../user/build/a")),
             "echo" => Some(include_bytes!("../user/build/echo")),
             "wc" => Some(include_bytes!("../user/build/wc")),
+            "tetris" => Some(include_bytes!("../user/build/tetris")),
+            "clear" => Some(include_bytes!("../user/build/clear")),
+            "info" => Some(include_bytes!("../user/build/info")),
             "c" => Some(include_bytes!("../user/build/c")),
             _ => None,
         }

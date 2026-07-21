@@ -23,9 +23,9 @@ unsafe extern "C" {
     unsafe static _stack_top: u8;
 }
 
+
+const INTRO: &str = include_str!(concat!(env!("OUT_DIR"), "/atos_intro_generated.txt")); // obtained from build.rs
 fn show_welcome_ascii() {
-    const INTRO: &str = 
-        include_str!(concat!(env!("OUT_DIR"), "/atos_intro_generated.txt")); // obtained from build.rs
 
     println!("{INTRO}");
     

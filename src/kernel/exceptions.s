@@ -167,7 +167,7 @@ b   el1032_serror
     // call rust handler with correct arg
     SET_EXCEPTION_ARG \type \source
     bl      handle_exception_el1
-
+    
     // load back the registers
     LOAD_REG
 

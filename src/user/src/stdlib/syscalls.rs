@@ -192,3 +192,9 @@ pub fn sleep(ms: u64) {
                          clobber_abi("C"));
     }
 }
+
+pub fn show_os_info() {
+    unsafe {
+        core::arch::asm!("svc #9", clobber_abi("C"));
+    }
+}

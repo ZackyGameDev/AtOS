@@ -23,6 +23,7 @@ pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
         6 => sys_wait(ctx).unwrap(),
         7 => sys_poll_char(ctx).unwrap(),
         8 => sys_sleep(ctx).unwrap(),
+        9 => sys_print_os_info(ctx).unwrap(),
         _ => {
             print!("Unknown syscall: {}", syscall_number);
         }
@@ -320,5 +321,10 @@ fn sys_sleep(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
         core::hint::spin_loop();
     }
 
+    Ok(())
+}
+
+fn sys_print_os_info(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
+    print!("{}", crate::INTRO);
     Ok(())
 }

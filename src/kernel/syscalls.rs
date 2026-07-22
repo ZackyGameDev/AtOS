@@ -24,6 +24,7 @@ pub fn handle_syscall(ctx: &mut ExceptionContext) -> () {
         7 => sys_poll_char(ctx).unwrap(),
         8 => sys_sleep(ctx).unwrap(),
         9 => sys_print_os_info(ctx).unwrap(),
+        10 => sys_p_info(ctx).unwrap(),
         _ => {
             print!("Unknown syscall: {}", syscall_number);
         }
@@ -324,7 +325,18 @@ fn sys_sleep(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
     Ok(())
 }
 
-fn sys_print_os_info(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
+fn sys_print_os_info(_ctx: &ExceptionContext) -> Result<(), &'static str> {
     print!("{}", crate::INTRO);
+    Ok(())
+}
+fn sys_p_info(ctx: &mut ExceptionContext) -> Result<(), &'static str> {
+    // this will be used by the running process to get meta information about itself
+
+    if let Some(curr) = Scheduler::get_current_process() {
+        curr.save_meta_to_ectx(ctx);
+    } else {
+        return Err("How did save info actually fail?")
+    }
+
     Ok(())
 }

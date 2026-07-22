@@ -81,15 +81,24 @@ pub fn sys_readline(buf: &mut [u8]) -> usize {
 /* ~~~ PROCESS CONTROL ~~~ */
 // exit is assigned syscall number 3 (svc #3)
 pub fn exit(exit_code: i64) -> ! {
+    
+    if let Ok((pid, ppid)) = get_p_info() && crate::INFO_PRINTS_ENABLED {
+        crate::println!("process with PID {} from parent PID {}, exiting with exit code {}", pid, ppid, exit_code).unwrap();
+    }
+
     unsafe {
         core::arch::asm!(
             "svc #3",
-            in("x0") exit_code,
-            options(noreturn)
+            in("x0") exit_code
         );
     }
-}
 
+    if let Ok((pid, ppid)) = get_p_info() && crate::INFO_PRINTS_ENABLED {
+        crate::println!("process failed to exit! pid: {}, parent pid: {}, exit code: {}", pid, ppid, exit_code).unwrap();
+    }
+
+    loop {};
+}
 
 // fork is assigned syscall number 4 (svc #4)
 // returns 0 in the child process, and returns the pid of the 
@@ -103,6 +112,10 @@ pub fn fork() -> Result<u64, &'static str> {
             out("x0") r,
             clobber_abi("C")
         );
+    }
+
+    if crate::INFO_PRINTS_ENABLED && r == 0 && let Ok((pid, ppid)) = get_p_info() {
+        crate::println!("new process spawned with PID: {}, from parent PID: {}", pid, ppid).unwrap();
     }
 
     if r as i64 == -1 {
@@ -197,4 +210,18 @@ pub fn show_os_info() {
     unsafe {
         core::arch::asm!("svc #9", clobber_abi("C"));
     }
+}
+
+pub fn get_p_info() -> Result<(u64, u64), &'static str> {
+    let mut pid: u64;
+    let mut parent_pid: u64;
+
+    unsafe {
+        core::arch::asm!("svc #10", 
+                        out("x0") pid,
+                        out("x1") parent_pid,
+                        clobber_abi("C"));
+    }
+
+    Ok((pid, parent_pid))
 }

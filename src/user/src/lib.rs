@@ -1,5 +1,7 @@
 #![no_std]
 
+pub static INFO_PRINTS_ENABLED: bool = true;
+
 pub mod stdlib;
 
 /* -- RUNTIME -- */
@@ -20,12 +22,24 @@ macro_rules! entry_args {
     };
 }
 
+#[macro_export]
+macro_rules! print_meta { () => {
+    if user::INFO_PRINTS_ENABLED {
+        let mut pid: u64;
+        let mut ppid: u64;
+        (pid, ppid) = user::stdlib::syscalls::get_p_info().unwrap();
+    
+        user::println!("new process spawned with PID: {}, from parent PID: {}", pid, ppid).unwrap();
+    }
+
+};}
 
 #[macro_export]
 macro_rules! runtime_entry {
     ($main:path, false) => {
         #[unsafe(no_mangle)]
         pub extern "C" fn _start(_: u64, _: u64, _: u64) -> ! {
+            // user::print_meta!();
             $main();
             user::stdlib::syscalls::exit(0);
         }
@@ -34,6 +48,7 @@ macro_rules! runtime_entry {
     ($main:path, true) => {
         #[unsafe(no_mangle)]
         pub extern "C" fn _start(argc: u64, final_sp: u64, stack_bottom: u64) -> ! {
+            // user::print_meta!();
             user::parse_args!(argc, final_sp, stack_bottom, argv, args);
             $main(args);
             user::stdlib::syscalls::exit(0);

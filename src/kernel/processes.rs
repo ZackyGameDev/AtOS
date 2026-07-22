@@ -154,6 +154,11 @@ impl Process {
                exit_code: 0, })
     }
 
+    pub fn save_meta_to_ectx(&mut self, ectx: &mut ExceptionContext) -> () {
+        ectx.x[0] = self.pid;
+        ectx.x[1] = self.parent_pid;
+    }
+
     // very self explanatory. this function loads an elf file into memory and creates a process for it.
     // it returns the pid of the newly created process.
     pub fn spawn_from_elf(name: &str, parent_pid: u64, bytes: &'static [u8], args: &[&str]) -> Result<u64, &'static str> {
@@ -175,6 +180,19 @@ impl Process {
         }
 
         Ok(process.pid)
+    }
+
+    pub fn reparent_children_to(&mut self, new_parent_pid: u64) {
+        unsafe {
+            for slot in PROCESS_TABLE.iter_mut() {
+                if let Some(proc) = slot {
+                    if proc.parent_pid == self.pid {
+                        proc.parent_pid = new_parent_pid;
+                        dprintln!("[PROC_REPARENT] Process pid {}, name \"{:?}\" reparented to new parent pid {}", proc.pid, proc.name, new_parent_pid);
+                    }
+                }
+            }
+        }
     }
 
     pub fn fork(&self) -> Result<Process, &'static str> {
@@ -352,6 +370,7 @@ impl Process {
         self.exit_code = exit_code;
         KernelStack::queue_stack_to_free(self.pid).unwrap();
         self.set_state(ProcessState::Terminated); // \TODO currently terminated processes stay indefinitely process table.
+        self.reparent_children_to(1); // init process
         PageAllocator::free_page_table(Some(self.pctx.ttbr0));
     }
 

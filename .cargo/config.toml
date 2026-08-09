@@ -8,6 +8,7 @@ rustflags = [
   "-C", "link-arg=--fix-cortex-a53-843419",
   "-C", "target-cpu=cortex-a53",
   "-C", "link-arg=-Tlinker.ld",
+  "-C", "link-arg=--no-warn-rwx-segments",
 ]
 
 [profile.dev]

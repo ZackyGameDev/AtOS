@@ -447,6 +447,12 @@ impl PageAllocator {
             // Invalidate the page table entry
             (*l3).entry[l3_i] = 0;
 
+            core::arch::asm!("dsb ish",
+                             "tlbi VAAE1IS, {0}",
+                             "dsb ish",
+                             "isb",
+                             in(reg) va_in_page as u64);
+
             // Add the frame to the free frame list
             Self::add_free_frame(ttbr1_to_va!(l3_entry & 0x0000_FFFF_FFFF_F000));
         }
@@ -512,7 +518,15 @@ impl PageAllocator {
                 panic!("Page already allocated at va: {:#x}", va);
             }
 
+            core::arch::asm!("dsb ish",
+                             "tlbi VAAE1IS, {0}",
+                             "dsb ish",
+                             "isb",
+                             in(reg) va as u64);
+
             (*l3).entry[l3_i] & 0x0000_FFFF_FFFF_F000
+
+
         }
 
     }

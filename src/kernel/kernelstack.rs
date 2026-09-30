@@ -125,7 +125,14 @@ impl KernelStack {
                     }
 
                     let kernel_stack_top = kernel_stack_start + (KERNEL_STACK_SIZE as u64); 
-                    
+
+                    core::arch::asm!(
+                        "dsb ishst",
+                        "tlbi vmalle1is",
+                        "dsb ish",
+                        "isb"
+                    );
+
                     // testing if page was allocated
                     write_volatile((kernel_stack_top - 0x10) as *mut u64, 0x123456789ABCDEF0); // would cause page fault if page was not allocated properly
                     let value = read_volatile((kernel_stack_top - 0x10) as *const u64); 

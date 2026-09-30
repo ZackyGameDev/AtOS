@@ -113,4 +113,18 @@ impl Uart {
         self.r_lock.release();
         Some(byte)
     }
+
+    pub fn raw_write(&self, s: &str) {
+        for byte in s.bytes() {
+            // Write directly to the IO register without waiting for TX FIFO empty status
+            AUX_MU_IO_REG.write(byte as u32);
+        }
+    }
+
+    /// Associated raw function to write a string even without a `Uart` instance/reference.
+    pub fn raw_write_str(s: &str) {
+        for byte in s.bytes() {
+            AUX_MU_IO_REG.write(byte as u32);
+        }
+    }
 }

@@ -475,10 +475,11 @@ impl PageAllocator {
 
         const VALID: u64 = 1 << 0;
         const PAGE: u64 = 1 << 1;
+        const ATTR_NORMAL: u64 = 1 << 2; // MAIR Index 1
         // 0b00 = EL1 RW, EL0 No Access 
         // 0b01 = EL1 RW, EL0 RW        
         const AP_EL0_RW: u64 = 0b01 << 6; 
-        const SH_INNER: u64 = 0b10 << 8;
+        const SH_INNER: u64 = 0b11 << 8;
         const AF: u64 = 1 << 10;
         const PXN: u64 = 1 << 53; // don't try to run user space code in el1!!
         // const UXN: u64 = 1 << 54;
@@ -506,7 +507,7 @@ impl PageAllocator {
             let l3_entry = (*l3).entry[l3_i];
             if l3_entry & 0b11 != 0b11 { 
                 Self::get_free_frame_pa().map(|frame| {
-                    (*l3).entry[l3_i] = frame as u64 | VALID | PAGE | AP_EL0_RW | SH_INNER | AF | PXN | NG; // valid, table
+                    (*l3).entry[l3_i] = frame as u64 | VALID | PAGE | AP_EL0_RW | SH_INNER | AF | PXN | NG | ATTR_NORMAL; // valid, table
                 }).expect("No free frames available for new page table entry");
             } else {
                 panic!("Page already allocated at va: {:#x}", va);
@@ -577,7 +578,7 @@ const fn kernel_l2_block_descriptor(pa: u64, attr: u64) -> u64 {
     const VALID: u64 = 1 << 0;
     const BLOCK: u64 = 0;
     const AP_EL1_RW: u64 = 0b00 << 6;
-    const SH_INNER: u64 = 0b10 << 8;
+    const SH_INNER: u64 = 0b11 << 8;
     const SH_NON: u64 = 0b00 << 8;
     const AF: u64 = 1 << 10;
     const PXN: u64 = 1 << 53;

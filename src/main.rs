@@ -44,6 +44,9 @@ pub extern "C" fn _rust_main() -> ! {
     // let kernel_root_sp = KernelStack::alloc_stack(0); // this is currently commented because it ends up being unused. But 
                                                         // there may be need for it later. so it is still here as a hint.
     
+    let u = Uart::new();
+    u.raw_write("Hello there!");
+
     show_welcome_ascii();
     println!("Total available memory: {} MB", available_memory() / (1024 * 1024));
     println!("Total usable memory: {} MB", total_memory() / (1024 * 1024));
@@ -77,6 +80,8 @@ pub fn the_end() -> ! {
 }
 
 use core::panic::PanicInfo;
+
+use crate::kernel::peripherals::Uart;
 
 #[panic_handler]
 fn panic(panic: &PanicInfo) -> ! {

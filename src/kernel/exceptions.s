@@ -152,7 +152,7 @@ b   el1032_serror
 // \TODO it is inefficient to reset tlb cache after every exception. better to do it in rust only at context switches.
 .macro RESET_TLB_CACHE
     dsb     ish
-    tlbi    vmalle1
+    tlbi    vmalle1is
     dsb     ish
     isb
 .endm 
